@@ -1,0 +1,124 @@
+<link rel="import" href="carbon-storage.html">
+<dom-module id="carbon-local-storage">
+  <script>
+    'use strict';
+
+    Polymer({
+      is: 'carbon-local-storage',
+
+      extends: 'carbon-storage',
+
+      properties: {
+        key: {
+          type: String,
+          notify: true
+        },
+
+        sessionOnly: {
+          type: Boolean,
+          value: false
+        },
+
+        storage: {
+          type: Object,
+          computed: '__computeStorage(sessionOnly)'
+        }
+      },
+
+      observers: [
+        '__storageSourceChanged(storage, key)'
+      ],
+
+      attached: function() {
+        this.listen(window, 'storage', '__onStorage');
+        this.listen(
+            window,
+            'carbon-local-storage-changed',
+            '__onCarbonLocalStorageChanged');
+      },
+
+      detached: function() {
+        this.unlisten(window, 'storage', '__onStorage');
+        this.unlisten(
+            window,
+            'carbon-local-storage-changed',
+            '__onCarbonLocalStorageChanged');
+      },
+
+      getStoredValue: function(path) {
+        var value;
+
+        if (this.key != null) {
+          try {
+            value = this.__parseValueFromStorage();
+
+            if (value != null) {
+              value = this.get(path, {
+                storage: value
+              });
+            } else {
+              value = undefined;
+            }
+          } catch (e) {
+            return Promise.reject(e);
+          }
+        }
+
+        return Promise.resolve(value);
+      },
+
+      setStoredValue: function(path, value) {
+        if (this.key != null) {
+          try {
+            this.storage.setItem(this.key, JSON.stringify(this.data));
+          } catch (e) {
+            return Promise.reject(e);
+          }
+
+          this.fire('carbon-local-storage-changed', this, {
+            node: window.top
+          });
+        }
+
+        return Promise.resolve(value);
+      },
+
+      __computeStorage: function(sessionOnly) {
+        return sessionOnly ? window.sessionStorage : window.localStorage;
+      },
+
+      __storageSourceChanged: function(storage, key) {
+        this.__initializeStoredValue();
+      },
+
+      __onStorage: function(event) {
+        if (event.key !== this.key ||
+            event.storageArea !== this.storage) {
+          return;
+        }
+
+        this.syncToMemory(function() {
+          this.set('data', this.__parseValueFromStorage());
+        });
+      },
+
+      __onCarbonLocalStorageChanged: function(event) {
+        if (event.detail === this) {
+          return;
+        }
+
+        this.syncToMemory(function() {
+          this.set('data', event.detail.data);
+        });
+      },
+
+      __parseValueFromStorage: function() {
+        try {
+          return JSON.parse(this.storage.getItem(this.key));
+        } catch(e) {
+          console.error('Failed to parse value from storage for', this.key);
+        }
+      }
+    });
+  </script>
+</dom-module>

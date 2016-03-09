@@ -1,0 +1,316 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../promise-polyfill/promise-polyfill.html">
+<dom-module id="carbon-storage">
+  <script>
+    (function() {
+      'use strict';
+
+      var SPLICES_RX = /\.splices$/;
+      var LENGTH_RX = /\.length$/;
+      var NUMBER_RX = /\.?#?([0-9]+)$/;
+
+      Polymer({
+        is: 'carbon-storage',
+
+        properties: {
+          new: {
+            type: Object,
+            value: false
+          },
+
+          data: {
+            type: Object,
+            notify: true,
+            value: null
+          },
+
+          log: {
+            type: Boolean,
+            value: false
+          }
+        },
+
+        observers: [
+          '__dataChanged(data.*)'
+        ],
+
+        created: function() {
+          this.__syncingToMemory = false;
+          this.__initializingStoredValue = null;
+          this.__transactionQueueAdvances = Promise.resolve();
+        },
+
+        ready: function() {
+          this.__initializeStoredValue();
+        },
+
+        get transactionsComplete() {
+          return this.__transactionQueueAdvances;
+        },
+
+        /**
+         * Read a value from storage. Override to implement reading stored values.
+         *
+         * @param {string} storagePath The path (through storage) of the value to
+         * create, relative to the root of storage associated with this instance.
+         * @return {Promise} A promise that resolves with the canonical value stored
+         * at the provided path when the transaction has completed. _If there is no
+         * such value at she provided path through storage, then the promise will
+         * resolve to `undefined`._ The promise will be rejected if the transaction
+         * fails for any reason.
+         */
+        getStoredValue: function(storagePath) {
+          return Promise.resolve();
+        },
+
+        /**
+         * Update a value in storage. Override to implement creating and updating
+         * stored values.
+         *
+         * @param {string} storagePath The path (through storage) of the value to
+         * update, relative to the root storage path configured for this instance.
+         * @param {*} value The updated in-memory value to apply to the stored value
+         * at the provided path.
+         * @return {Promise} A promise that resolves with the canonical value stored
+         * at the provided path when the transaction has completed. The promise will
+         * be rejected if the transaction fails for any reason.
+         */
+        setStoredValue: function(storagePath, value) {
+          return Promise.resolve(value);
+        },
+
+        /**
+         * Map Polymer's in-memory paths to storage paths. Override to define custom
+         * path mapping semantics from memory to storage.
+         *
+         * @param {string} path The Polymer in-memory path through a storage object.
+         * @return {string} The provided path mapped to the equivalent location in
+         * storage. This mapped version of the path is suitable for use with the
+         * CRUD operations on both memory and storage.
+         */
+        memoryPathToStoragePath: function(path) {
+          return path;
+        },
+
+        /**
+         * Map storage paths to Polymer's in-memory paths. Override to define custom
+         * path mapping semantics from storage to memory. This is the inversion of
+         * `memoryPathToStoragePath`.
+         *
+         * @param {string} path The storage path through a storage object.
+         * @param {string} The provided path through storage mapped to the
+         * equivalent Polymer path through the in-memory representation of storage.
+         */
+        storagePathToMemoryPath: function(path) {
+          return path;
+        },
+
+        /**
+         * Enables performing transformations on the in-memory representation of
+         * storage without activating observers that will cause those
+         * transformations to be re-applied to the storage backend. This is useful
+         * for preventing redundant (or cyclical) application of transformations.
+         *
+         * @param {Function} operation A function that will perform the desired
+         * transformation. It will be called synchronously, when it is safe to
+         * apply the transformation.
+         */
+        syncToMemory: function(operation) {
+          if (this.__syncingToMemory) {
+            return;
+          }
+
+          this.__group('Sync to memory.');
+
+          this.__syncingToMemory = true;
+          operation.call(this);
+          this.__syncingToMemory = false;
+
+          this.__groupEnd('Sync to memory.');
+        },
+
+        /**
+         * A convenience method that allows one to measure if
+         */
+        valueIsEmpty: function(value) {
+          if (Array.isArray(value)) {
+            return value.length === 0;
+          } else if (Object.prototype.isPrototypeOf(value)) {
+            return Object.keys(value).length === 0;
+          } else {
+            return value == null;
+          }
+        },
+
+        _getStoredValue: function(path) {
+          return this.getStoredValue(this.memoryPathToStoragePath(path));
+        },
+
+        _setStoredValue: function(path, value) {
+          return this.setStoredValue(this.memoryPathToStoragePath(path), value);
+        },
+
+        _enqueueTransaction: function(transaction) {
+          return this.__transactionQueueAdvances = this.__transactionQueueAdvances
+              .then(transaction.bind(this))
+              .catch(function(error) {
+                this.__error('Error performing queued transaction.', error);
+              }.bind(this));
+        },
+
+        __initializeStoredValue: function() {
+          if (this.__initializingStoredValue) {
+            return;
+          }
+
+          this.__group('Initializing stored value.');
+
+          this.__initializingStoredValue = this._enqueueTransaction(function() {
+            // We may have already received a default value for storage. Grab a
+            // reference to it here:
+            var defaultData = this.data;
+
+            if (this.new) {
+              this.__log('Memory value is new; stored value initialization will be skipped.').
+              return;
+            }
+
+            // If this is not a "new" model, then we should attempt
+            // to read an initial value from storage:
+            return this._getStoredValue('data').then(function(data) {
+              if (data == undefined) {
+                return this._setStoredValue('data', defaultData);
+              } else {
+                this.syncToMemory(function() {
+                  this.set('data', data);
+                });
+              }
+            }.bind(this)).then(function() {
+              this.__initializingStoredValue = null;
+              this.__groupEnd('Initializing stored value.');
+            }.bind(this));
+          });
+        },
+
+        __setStoredSplices: function(path, splices) {
+          return Promise.all(splices.map(function(splice) {
+            return Promise.all([
+              // TODO: Removed splices aren't getting removed:
+              this.__setStoredRange(
+                  path,
+                  splice.index,
+                  splice.removed.map(function() { return null; })),
+              this.__setStoredRange(
+                  path,
+                  splice.index,
+                  splice.object.slice(
+                      splice.index,
+                      splice.index + splice.addedCount))
+            ]);
+          }, this));
+        },
+
+        __setStoredRange: function(path, index, values) {
+          return Promise.all(values.map(function(value, valueIndex) {
+            return this._setStoredValue(
+                path + '.' + (index + valueIndex), value);
+          }, this));
+        },
+
+        __dataChanged: function(change) {
+          if (this.__syncingToMemory ||
+              this.__initializingStoredValue ||
+              this.__pathCanBeIgnored(change.path)) {
+            return;
+          }
+
+          var path = this.__normalizeMemoryPath(change.path);
+          var value = change.value;
+          var indexSplices = value && value.indexSplices;
+
+          this._enqueueTransaction(function() {
+
+            this.__log('Setting', path + ':', indexSplices || value);
+
+            if (indexSplices && this.__pathIsSplices(path)) {
+              return this.__setStoredSplices(
+                  this.__parentPath(path), indexSplices);
+            }
+
+            return this._setStoredValue(path, value);
+          });
+        },
+
+        __normalizeMemoryPath: function(path) {
+          var parts = path.split('.');
+          var parentPath = [];
+          var currentPath = [];
+          var normalizedPath = [];
+          var index;
+
+          for (var i = 0; i < parts.length; ++i) {
+            currentPath.push(parts[i]);
+            if (/^#/.test(parts[i])) {
+              normalizedPath.push(
+                  this.get(parentPath).indexOf(this.get(currentPath)));
+            } else {
+              normalizedPath.push(parts[i]);
+            }
+            parentPath.push(parts[i]);
+          }
+
+          return normalizedPath.join('.');
+        },
+
+        __parentPath: function(path) {
+          var parentPath = path.split('.');
+          return parentPath.slice(0, parentPath.length - 1).join('.');
+        },
+
+        __pathCanBeIgnored: function(path) {
+          return LENGTH_RX.test(path) &&
+              Array.isArray(this.get(this.__parentPath(path)));
+        },
+
+        __pathIsSplices: function(path) {
+          return SPLICES_RX.test(path) &&
+              Array.isArray(this.get(this.__parentPath(path)));
+        },
+
+        __pathRefersToArray: function(path) {
+          return (SPLICES_RX.test(path) || LENGTH_RX.test(path))
+              Array.isArray(this.get(this.__parentPath(path)));
+        },
+
+        __pathTailToIndex: function(path) {
+          var tail = path.split('.').pop();
+          return window.parseInt(tail.replace(NUMBER_RX, '$1'), 10);
+        },
+
+        __log: function() {
+          if (this.log) {
+            console.log.apply(console, arguments);
+          }
+        },
+
+        __error: function() {
+          if (this.log) {
+            console.error.apply(console, arguments);
+          }
+        },
+
+        __group: function() {
+          if (this.log) {
+            console.group.apply(console, arguments);
+          }
+        },
+
+        __groupEnd: function() {
+          if (this.log) {
+            console.groupEnd.apply(console, arguments);
+          }
+        }
+      });
+    })();
+  </script>
+</dom-module>

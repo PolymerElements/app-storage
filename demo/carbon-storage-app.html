@@ -1,0 +1,46 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../carbon-local-storage.html">
+<dom-module id="carbon-demo-app">
+  <template>
+    <carbon-local-storage id="storage" key="demo" data="{{data}}" log></carbon-local-storage>
+  </template>
+  <script>
+    Polymer({
+      is: 'carbon-demo-app',
+
+      properties: {
+        data: {
+          type: Object
+        }
+      },
+
+      observers: [
+        'dataChanged(data.baz.splices)',
+        'fooChanged(data.foo)',
+        'barChanged(data.bar)'
+      ],
+
+      ready: function() {
+        var obj = { foo: 1, baz: ['vim'] };
+        this.data = obj;
+
+        obj.baz = {
+          bar: 2
+        };
+        this.data = obj;
+      },
+
+      fooChanged: function() {
+        console.log('FOO CHANGED', arguments);
+      },
+
+      barChanged: function() {
+        console.log('BAR CHANGED', arguments);
+      },
+
+      dataChanged: function() {
+        console.log('DATA CHANGED', JSON.stringify(arguments, null, 2), arguments);
+      }
+    });
+  </script>
+</dom-module>

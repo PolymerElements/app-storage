@@ -1,0 +1,101 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="carbon-storage.html">
+<dom-module id="carbon-offline-storage">
+  <script>
+    'use strict';
+
+    // Placeholder for service worker indexeddb service.
+    function StorageWriteQueue(namespace) {
+      this.namespace = namespace;
+      this.__db = {};
+    }
+
+    StorageWriteQueue.prototype = {
+      enqueue: function(path, value) {
+        this.__db[this.__scope(path)] = value;
+        return Promise.resolve();
+      },
+
+      dequeue: function(path) {
+        this.__db[this.__scope(path)] = null;
+        return Promise.resolve();
+      },
+
+      flush: function() {
+        var result = this.__getQueuedWrites()
+        this.__db = {};
+        return result;
+      },
+
+      __scope: function(path) {
+        return this.namespace + '_' + path;
+      },
+
+      __unscope: function(scopedPath) {
+        return scopedPath.replace(this.namespace + '_', '');
+      },
+
+      __getQueuedWrites: function() {
+        return Promise.resolve(Object.keys(this.__db).map(function(key) {
+          return [this.__unscope(key), this.__db[key]];
+        }, this));
+      }
+    };
+
+    Polymer({
+      is: 'carbon-offline-storage',
+
+      extends: 'carbon-storage',
+
+      properties: {
+        namespace: {
+          type: String,
+          value: 'carbon-offline-storage'
+        },
+
+        writeQueue: {
+          type: Object,
+          computed: '__computeWriteQueue(namespace)'
+        },
+
+        disableOfflineSupport: {
+          type: Boolean,
+          value: false
+        }
+      },
+
+      observers: [
+        '__writeQueueChanged(writeQueue)'
+      ],
+
+      _setStoredValue: function(path, value) {
+        var storagePath = this.memoryPathToStoragePath(path);
+
+        if (this.disableOfflineSupport) {
+          return this.setStoredValue(storagePath, value);
+        }
+
+        return this.writeQueue.enqueue(storagePath, value).then(function() {
+          // TODO: Call super._setStoredValue instead of public impl?
+          return this.setStoredValue(storagePath, value);
+        }.bind(this)).then(function() {
+          return this.writeQueue.dequeue(storagePath);
+        }.bind(this));
+      },
+
+      __computeWriteQueue: function(namespace) {
+        return new StorageWriteQueue(namespace);
+      },
+
+      __writeQueueChanged: function(writeQueue) {
+        this._enqueueTransaction(function() {
+          return writeQueue.flush().then(function(writes) {
+            return Promise.all(writes.map(function(write) {
+              return this._setStoredValue.apply(this, write);
+            }, this));
+          }.bind(this));
+        });
+      }
+    });
+  </script>
+</dom-module>
