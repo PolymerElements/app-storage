@@ -1,0 +1,20 @@
+{
+  "name": "carbon-storage",
+  "authors": [
+    "The Polymer Authors"
+  ],
+  "description": "",
+  "main": "",
+  "moduleType": [],
+  "license": "MIT",
+  "homepage": "",
+  "private": true,
+  "dependencies": {
+    "promise-polyfill": "polymerlabs/promise-polyfill#^v1.0.0",
+    "polymer": "polymer/polymer#extends",
+    "firebase": "^2.4.1"
+  },
+  "devDependencies": {
+    "web-component-tester": "^4.2.2"
+  }
+}

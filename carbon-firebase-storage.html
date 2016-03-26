@@ -1,0 +1,140 @@
+<link rel="import" href="carbon-offline-storage.html">
+<script src="../firebase/firebase.js"></script>
+<script>
+  'use strict';
+
+  Polymer({
+    is: 'carbon-firebase-storage',
+
+    extends: 'carbon-offline-storage',
+
+    properties: {
+      namespace: {
+        type: String,
+        computed: '__computeNamespace(location)'
+      },
+
+      location: {
+        type: String,
+        observer: '__locationChanged'
+      },
+
+      firebase: {
+        type: Object,
+        computed: '__computeFirebase(location)',
+        observer: '__firebaseChanged'
+      }
+    },
+
+    attached: function() {
+      this.__firebaseChanged(this.firebase, this.firebase);
+    },
+
+    detached: function() {
+      if (this.firebase) {
+        this.firebase.off();
+      }
+    },
+
+    getStoredValue: function(path) {
+      return new Promise(function(resolve, reject) {
+          new Firebase(path).once('value', function(snapshot) {
+            var value = snapshot.val();
+            if (value == null) {
+              resolve();
+            }
+            resolve(value);
+          });
+        }.bind(this));
+    },
+
+    setStoredValue: function(path, value) {
+      // "Empty" values (like objects without own properties or empty arrays)
+      // are ignored by Firebase, so we do not try to sync them:
+      //if (this.valueIsEmpty(value)) {
+      //  return Promise.resolve(value);
+      //}
+
+      return this.__setFirebaseValue(path, value);
+    },
+
+    memoryPathToStoragePath: function(path) {
+      return [this.location].concat(
+          path.replace(/^data\.?/, '').split('.')).join('/');
+    },
+
+    storagePathToMemoryPath: function(storagePath) {
+      var path = 'data';
+
+      storagePath =
+          storagePath.replace(this.location + '/', '').split('/').join('.');
+
+      if (storagePath) {
+        path += '.' + storagePath;
+      }
+
+      return path;
+    },
+
+    __computeFirebase: function(location) {
+      return new Firebase(this.location);
+    },
+
+    __computeNamespace: function(location) {
+      return 'carbon-firebase-storage_' + location;
+    },
+
+    __locationChanged: function(location, oldLocation) {
+      if (oldLocation != null && this.data != null) {
+        console.log(
+            'Switched Firebase location from',
+            oldLocation, 'to', location, '.',
+            'Resetting data to null.');
+        this.data = null;
+      }
+    },
+
+    __firebaseChanged: function(firebase, oldFirebase) {
+      if (oldFirebase) {
+        oldFirebase.off('value', this.__onFirebaseValue, this);
+      }
+
+      if (firebase) {
+        firebase.on('value', this.__onFirebaseValue, this);
+      }
+    },
+
+    __onFirebaseValue: function(snapshot) {
+      var value = snapshot.val();
+
+      if (value == null && this.valueIsEmpty(this.data)) {
+        return;
+      }
+
+      if (!this.new) {
+        this.async(function() {
+          console.log('Updating value from Firebase', value);
+          this.syncToMemory(function() {
+            this.set('data', value);
+          });
+        });
+      }
+    },
+
+    __setFirebaseValue: function(path, value) {
+      return new Promise(function(resolve, reject) {
+        console.log('Setting Firebase value at', path, 'to', value)
+        new Firebase(path).transaction(function() {
+          return value;
+        }, function(error, committed, snapshot) {
+          if (error) {
+            return reject(error);
+          } else if (!committed) {
+            return reject(new Error('Failed to commit data.'));
+          }
+          resolve(snapshot.val());
+        }.bind(this));
+      }.bind(this));
+    }
+  });
+</script>
