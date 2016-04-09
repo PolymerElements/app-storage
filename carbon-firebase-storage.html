@@ -1,4 +1,5 @@
-<link rel="import" href="carbon-offline-storage.html">
+<link rel="import" href="carbon-network-status-behavior.html">
+<link rel="import" href="carbon-storage.html">
 <script src="../firebase/firebase.js"></script>
 <script>
   'use strict';
@@ -6,14 +7,13 @@
   Polymer({
     is: 'carbon-firebase-storage',
 
-    extends: 'carbon-offline-storage',
+    extends: 'carbon-storage',
+
+    behaviors: [
+      Polymer.CarbonNetworkStatusBehavior
+    ],
 
     properties: {
-      offlineNamespace: {
-        type: String,
-        computed: '__computeOfflineNamespace(location)'
-      },
-
       location: {
         type: String,
         observer: '__locationChanged'
@@ -21,7 +21,7 @@
 
       firebase: {
         type: Object,
-        computed: '__computeFirebase(location, online)',
+        computed: '__computeFirebase(location)',
         observer: '__firebaseChanged'
       }
     },
@@ -31,12 +31,10 @@
     ],
 
     attached: function() {
-      this.getPrototype('carbon-offline-storage').attached.call(this);
       this.__firebaseChanged(this.firebase, this.firebase);
     },
 
     detached: function() {
-      this.getPrototype('carbon-offline-storage').detached.call(this);
       if (this.firebase) {
         this.firebase.off();
       }
@@ -79,28 +77,12 @@
       return path;
     },
 
-    __computeFirebase: function(location, online) {
-      return online ?
-          new Firebase(location) :
-          new Firebase(location, '__offline__');
-    },
-
-    __computeOfflineNamespace: function(location) {
-      return 'carbon-firebase-storage_' + location;
-    },
-
-    __onlineChanged: function(online) {
-      if (online) {
-        Firebase.goOnline();
-      } else {
-        Firebase.goOffline();
+    __computeFirebase: function(location) {
+      if (location == null) {
+        return null;
       }
-    },
 
-    __locationChanged: function(location, oldLocation) {
-      if (oldLocation != null && this.data != null) {
-        this.data = null;
-      }
+      return new Firebase(location);
     },
 
     __firebaseChanged: function(firebase, oldFirebase) {
@@ -113,17 +95,31 @@
       }
     },
 
+    __onlineChanged: function(online) {
+      if (online) {
+        Firebase.goOnline();
+      } else {
+        Firebase.goOffline();
+      }
+    },
+
+    __locationChanged: function(location, oldLocation) {
+      if (oldLocation != null && !this.valueIsEmpty(this.data)) {
+        this.data = this.zeroValue;
+      }
+    },
+
     __onFirebaseValue: function(snapshot) {
       var value = snapshot.val();
 
       if (value == null && this.valueIsEmpty(this.data)) {
-        return;
+        value = this.zeroValue;
       }
 
       if (!this.new) {
         this.async(function() {
           this.syncToMemory(function() {
-            console.log('Updating data from Firebase value:', value);
+            this._log('Updating data from Firebase value:', value);
             this.set('data', value);
           });
         });
@@ -131,7 +127,7 @@
     },
 
     __setFirebaseValue: function(path, value) {
-      console.log('Setting Firebase value at', path, 'to', value)
+      this._log('Setting Firebase value at', path, 'to', value)
       return this.firebase.child(path).set(value);
     }
   });

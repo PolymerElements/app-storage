@@ -19,8 +19,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <link rel="import" href="carbon-storage-app.html">
+  <link rel="import" href="../carbon-firebase-query.html">
 </head>
 <body unresolved>
   <carbon-storage-app></carbon-storage-app>
+
+  <!-- <template is="dom-bind">
+    <carbon-firebase-query
+        location="https://dinosaur-facts.firebaseio.com/dinosaurs"
+        data="{{dinosaurs}}" log>
+    </carbon-firebase-query>
+    <template is="dom-repeat" items="[[dinosaurs]]">
+      <div>[[item.height]]</div>
+    </template>
+  </template> -->
 </body>
 </html>

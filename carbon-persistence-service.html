@@ -29,7 +29,7 @@
           workerScope: {
             type: String,
             value() {
-              return this.resolveUrl('./');
+              return this.resolveUrl('$carbon-persistence-service');
             }
           },
 
@@ -67,7 +67,6 @@
             this.persistedData = data;
             this.linkPaths('data', 'persistedData');
             this.linkPaths('persistedData', 'data');
-            //this._setPersistedData(this.data);
           } else {
             this.unlinkPaths('data', 'persistedData');
             this.unlinkPaths('persistedData', 'data');
@@ -77,7 +76,6 @@
                 return;
               }
               this.persistedData = value;
-              //this._setPersistedData(value);
             });
           }
         }

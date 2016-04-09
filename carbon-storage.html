@@ -21,15 +21,17 @@
           data: {
             type: Object,
             notify: true,
-            value: null
+            value: function() {
+              return this.zeroValue;
+            }
           },
 
-          log: {
+          sequentialTransactions: {
             type: Boolean,
             value: false
           },
 
-          sequentialTransactions: {
+          log: {
             type: Boolean,
             value: false
           }
@@ -136,13 +138,13 @@
             return;
           }
 
-          this.__group('Sync to memory.');
+          this._group('Sync to memory.');
 
           this.__syncingToMemory = true;
           operation.call(this);
           this.__syncingToMemory = false;
 
-          this.__groupEnd('Sync to memory.');
+          this._groupEnd('Sync to memory.');
         },
 
         /**
@@ -174,7 +176,7 @@
           return this.__transactionQueueAdvances = this.__transactionQueueAdvances
               .then(transaction)
               .catch(function(error) {
-                this.__error('Error performing queued transaction.', error);
+                this._error('Error performing queued transaction.', error);
               }.bind(this));
         },
 
@@ -183,18 +185,18 @@
             return;
           }
 
-          this.__group('Initializing stored value.');
+          this._group('Initializing stored value.');
 
           this.__initializingStoredValue = this._enqueueTransaction(function() {
             if (this.new) {
-              this.__log('Memory value is new; stored value initialization will be skipped.').
+              this._log('Memory value is new; stored value initialization will be skipped.').
               return;
             }
 
             // If this is not a "new" model, then we should attempt
             // to read an initial value from storage:
             return this._getStoredValue('data').then(function(data) {
-              console.log('Got stored value!', data);
+              this._log('Got stored value!', data);
               if (data == null) {
                 return this._setStoredValue(
                     'data', this.defaultDataValue || this.zeroValue);
@@ -206,13 +208,36 @@
             }.bind(this)).then(function() {
               this.__initialized = true;
               this.__initializingStoredValue = null;
-              this.__groupEnd('Initializing stored value.');
+              this._groupEnd('Initializing stored value.');
             }.bind(this));
           });
         },
 
+        _log: function() {
+          if (this.log) {
+            console.log.apply(console, arguments);
+          }
+        },
+
+        _error: function() {
+          if (this.log) {
+            console.error.apply(console, arguments);
+          }
+        },
+
+        _group: function() {
+          if (this.log) {
+            console.group.apply(console, arguments);
+          }
+        },
+
+        _groupEnd: function() {
+          if (this.log) {
+            console.groupEnd.apply(console, arguments);
+          }
+        },
+
         __dataChanged: function(change) {
-          console.log('wtf');
           if (this.__syncingToMemory ||
               !this.__initialized ||
               //this.__initializingStoredValue ||
@@ -226,7 +251,7 @@
 
           this._enqueueTransaction(function() {
 
-            this.__log('Setting', path + ':', indexSplices || value);
+            this._log('Setting', path + ':', indexSplices || value);
 
             if (indexSplices && this.__pathIsSplices(path)) {
               path = this.__parentPath(path);
@@ -281,30 +306,6 @@
         __pathTailToIndex: function(path) {
           var tail = path.split('.').pop();
           return window.parseInt(tail.replace(NUMBER_RX, '$1'), 10);
-        },
-
-        __log: function() {
-          if (this.log) {
-            console.log.apply(console, arguments);
-          }
-        },
-
-        __error: function() {
-          if (this.log) {
-            console.error.apply(console, arguments);
-          }
-        },
-
-        __group: function() {
-          if (this.log) {
-            console.group.apply(console, arguments);
-          }
-        },
-
-        __groupEnd: function() {
-          if (this.log) {
-            console.groupEnd.apply(console, arguments);
-          }
         }
       });
     })();

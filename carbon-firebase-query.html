@@ -1,0 +1,179 @@
+<link rel="import" href="carbon-storage.html">
+<dom-module id="carbon-firebase-query">
+  <script>
+    (function() {
+      'use strict';
+
+      Polymer({
+        is: 'carbon-firebase-query',
+
+        extends: 'carbon-storage',
+
+        properties: {
+          location: {
+            type: String
+          },
+
+          firebase: {
+            type: Object,
+            computed: '__computeFirebase(location)'
+          },
+
+          query: {
+            type: Object,
+            computed: '__computeQuery(firebase, orderByChild, limitToFirst, limitToLast)',
+            observer: '__queryChanged'
+          },
+
+          orderByChild: {
+            type: String,
+            value: ''
+          },
+
+          limitToFirst: {
+            type: Number,
+            value: 0
+          },
+
+          limitToLast: {
+            type: Number,
+            value: 0
+          }
+        },
+
+        created: function() {
+          this.getPrototype('carbon-storage').created.call(this);
+          this.__map = {};
+        },
+
+        attached: function() {
+          this.__queryChanged(this.query, this.query);
+        },
+
+        detached: function() {
+          if (this.query == null) {
+            return;
+          }
+
+          this.query.off();
+        },
+
+        get zeroValue() {
+          return [];
+        },
+
+        setStoredValue: function(storagePath, value) {
+          if (storagePath !== '/') {
+            return this.__setFirebaseValue(storagePath, value);
+          } else {
+            return Promise.resolve();
+          }
+        },
+
+        memoryPathToStoragePath: function(path) {
+          return '/' + path.replace(/^data\.?/, '').split('.').join('/');
+        },
+
+        storagePathToMemoryPath: function(storagePath) {
+          var path = 'data';
+
+          storagePath =
+              storagePath.replace('/', '').split('/').join('.');
+
+          if (storagePath) {
+            path += '.' + storagePath;
+          }
+
+          return path;
+        },
+
+        __computeFirebase: function(location) {
+          if (location == null) {
+            return null;
+          }
+
+          return new Firebase(location);
+        },
+
+        __computeQuery: function(firebase, orderByChild, limitToFirst, limitToLast) {
+          if (firebase == null) {
+            return null;
+          }
+
+          var query;
+
+          if (orderByChild) {
+            query = firebase.orderByChild(orderByChild);
+          } else {
+            query = firebase.orderByKey();
+          }
+
+          if (limitToFirst) {
+            query = query.limitToFirst(limitToFirst);
+          } else if (limitToLast) {
+            query = query.limitToLast(limitToLast);
+          }
+
+          return query;
+        },
+
+        __queryChanged: function(query, oldQuery) {
+          if (oldQuery) {
+            oldQuery.off();
+          }
+
+          if (query) {
+            this.firebase.off();
+            query.on('child_added', this.__onFirebaseChildAdded, this);
+            query.on('child_removed', this.__onFirebaseChildRemoved, this);
+            query.on('child_changed', this.__onFirebaseChildChanged, this);
+          }
+        },
+
+        __onFirebaseChildAdded: function(snapshot) {
+          var value = snapshot.val();
+          var key = snapshot.key();
+
+          this.__map[key] = value;
+          this.push('data', value);
+        },
+
+        __onFirebaseChildRemoved: function(snapshot) {
+          var key = snapshot.key();
+          var value = this.__map[key];
+
+          if (value) {
+            this.__map[key] = null;
+            this.async(function() {
+              this.syncToMemory(function() {
+                this.splice('data', this.data.indexOf(value), 1);
+              });
+            });
+          }
+        },
+
+        __onFirebaseChildChanged: function(snapshot) {
+          var key = snapshot.key();
+          var value = this.__map[key];
+
+          if (value) {
+            var index = this.data.indexOf(value);
+            value = snapsnot.val();
+            this.__map[key] = value;
+
+            this.async(function() {
+              this.syncToMemory(function() {
+                this.set([data, index], value);
+              });
+            });
+          }
+        },
+
+        __setFirebaseValue: function(path, value) {
+          this._log('Setting Firebase value at', path, 'to', value)
+          return this.firebase.child(path).set(value);
+        }
+      });
+    })();
+  </script>
+</dom-module>
