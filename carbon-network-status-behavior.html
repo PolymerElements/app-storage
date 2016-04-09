@@ -1,0 +1,34 @@
+<link rel="import" href="../polymer/polymer.html">
+<script>
+  (function() {
+    'use strict';
+
+    Polymer.CarbonNetworkStatusBehavior = {
+      properties: {
+        online: {
+          type: Boolean,
+          readOnly: true,
+          notify: true,
+          value: function() {
+            return window.navigator.onLine;
+          }
+        }
+      },
+
+      attached: function() {
+        this.listen(window, 'online', '__onNetworkStateChanged');
+        this.listen(window, 'offline', '__onNetworkStateChanged');
+        this.__onNetworkStateChanged();
+      },
+
+      detached: function() {
+        this.unlisten(window, 'online', '__onNetworkStateChanged');
+        this.unlisten(window, 'offline', '__onNetworkStateChanged');
+      },
+
+      __onNetworkStateChanged: function() {
+        this._setOnline(window.navigator.onLine);
+      }
+    };
+  })();
+</script>

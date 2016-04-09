@@ -12,9 +12,11 @@
   "dependencies": {
     "promise-polyfill": "polymerlabs/promise-polyfill#^v1.0.0",
     "polymer": "polymer/polymer#extends",
-    "firebase": "^2.4.1"
+    "firebase": "^2.4.2",
+    "indexeddb-promised": "jakearchibald/indexeddb-promised#master"
   },
   "devDependencies": {
-    "web-component-tester": "^4.2.2"
+    "web-component-tester": "^4.2.2",
+    "paper-input": "polymerelements/paper-input#^1.0.0"
   }
 }

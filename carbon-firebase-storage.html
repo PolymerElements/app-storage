@@ -9,9 +9,9 @@
     extends: 'carbon-offline-storage',
 
     properties: {
-      namespace: {
+      offlineNamespace: {
         type: String,
-        computed: '__computeNamespace(location)'
+        computed: '__computeOfflineNamespace(location)'
       },
 
       location: {
@@ -21,53 +21,56 @@
 
       firebase: {
         type: Object,
-        computed: '__computeFirebase(location)',
+        computed: '__computeFirebase(location, online)',
         observer: '__firebaseChanged'
       }
     },
 
+    observers: [
+      '__onlineChanged(online)'
+    ],
+
     attached: function() {
+      this.getPrototype('carbon-offline-storage').attached.call(this);
       this.__firebaseChanged(this.firebase, this.firebase);
     },
 
     detached: function() {
+      this.getPrototype('carbon-offline-storage').detached.call(this);
       if (this.firebase) {
         this.firebase.off();
       }
     },
 
+    get zeroValue() {
+      return {};
+    },
+
     getStoredValue: function(path) {
       return new Promise(function(resolve, reject) {
-          new Firebase(path).once('value', function(snapshot) {
+          this.firebase.child(path).once('value', function(snapshot) {
             var value = snapshot.val();
             if (value == null) {
-              resolve();
+              resolve(this.zeroValue);
             }
             resolve(value);
-          });
+          }, this);
         }.bind(this));
     },
 
     setStoredValue: function(path, value) {
-      // "Empty" values (like objects without own properties or empty arrays)
-      // are ignored by Firebase, so we do not try to sync them:
-      //if (this.valueIsEmpty(value)) {
-      //  return Promise.resolve(value);
-      //}
-
-      return this.__setFirebaseValue(path, value);
+      this.__setFirebaseValue(path, value);
     },
 
     memoryPathToStoragePath: function(path) {
-      return [this.location].concat(
-          path.replace(/^data\.?/, '').split('.')).join('/');
+      return '/' + path.replace(/^data\.?/, '').split('.').join('/');
     },
 
     storagePathToMemoryPath: function(storagePath) {
       var path = 'data';
 
       storagePath =
-          storagePath.replace(this.location + '/', '').split('/').join('.');
+          storagePath.replace('/', '').split('/').join('.');
 
       if (storagePath) {
         path += '.' + storagePath;
@@ -76,20 +79,26 @@
       return path;
     },
 
-    __computeFirebase: function(location) {
-      return new Firebase(this.location);
+    __computeFirebase: function(location, online) {
+      return online ?
+          new Firebase(location) :
+          new Firebase(location, '__offline__');
     },
 
-    __computeNamespace: function(location) {
+    __computeOfflineNamespace: function(location) {
       return 'carbon-firebase-storage_' + location;
+    },
+
+    __onlineChanged: function(online) {
+      if (online) {
+        Firebase.goOnline();
+      } else {
+        Firebase.goOffline();
+      }
     },
 
     __locationChanged: function(location, oldLocation) {
       if (oldLocation != null && this.data != null) {
-        console.log(
-            'Switched Firebase location from',
-            oldLocation, 'to', location, '.',
-            'Resetting data to null.');
         this.data = null;
       }
     },
@@ -113,8 +122,8 @@
 
       if (!this.new) {
         this.async(function() {
-          console.log('Updating value from Firebase', value);
           this.syncToMemory(function() {
+            console.log('Updating data from Firebase value:', value);
             this.set('data', value);
           });
         });
@@ -122,19 +131,8 @@
     },
 
     __setFirebaseValue: function(path, value) {
-      return new Promise(function(resolve, reject) {
-        console.log('Setting Firebase value at', path, 'to', value)
-        new Firebase(path).transaction(function() {
-          return value;
-        }, function(error, committed, snapshot) {
-          if (error) {
-            return reject(error);
-          } else if (!committed) {
-            return reject(new Error('Failed to commit data.'));
-          }
-          resolve(snapshot.val());
-        }.bind(this));
-      }.bind(this));
+      console.log('Setting Firebase value at', path, 'to', value)
+      return this.firebase.child(path).set(value);
     }
   });
 </script>

@@ -48,26 +48,46 @@
       extends: 'carbon-storage',
 
       properties: {
-        namespace: {
+        offlineNamespace: {
           type: String,
           value: 'carbon-offline-storage'
         },
 
         writeQueue: {
           type: Object,
-          computed: '__computeWriteQueue(namespace)'
+          computed: '__computeWriteQueue(offlineNamespace)'
         },
 
         disableOfflineSupport: {
           type: Boolean,
           value: false
+        },
+
+        online: {
+          type: Boolean,
+          readOnly: true,
+          notify: true,
+          value: function() {
+            return window.navigator.onLine;
+          }
         }
       },
 
       observers: [
-        '__writeQueueChanged(writeQueue)'
+        '_flushEnqueuedWrites(writeQueue)'
       ],
 
+      attached: function() {
+        this.listen(window, 'online', '__onOnline');
+        this.listen(window, 'offline', '__onOffline');
+      },
+
+      detached: function() {
+        this.unlisten(window, 'online', '__onOnline');
+        this.unlisten(window, 'offline', '__onOffline');
+      },
+
+      /*
       _setStoredValue: function(path, value) {
         var storagePath = this.memoryPathToStoragePath(path);
 
@@ -82,19 +102,29 @@
           return this.writeQueue.dequeue(storagePath);
         }.bind(this));
       },
+      */
 
-      __computeWriteQueue: function(namespace) {
-        return new StorageWriteQueue(namespace);
-      },
-
-      __writeQueueChanged: function(writeQueue) {
+      _flushEnqueuedWrites: function() {
         this._enqueueTransaction(function() {
-          return writeQueue.flush().then(function(writes) {
+          return this.writeQueue.flush().then(function(writes) {
             return Promise.all(writes.map(function(write) {
               return this._setStoredValue.apply(this, write);
             }, this));
           }.bind(this));
         });
+      },
+
+      __onOnline: function() {
+        this._setOnline(true);
+        this._flushEnqueuedWrites();
+      },
+
+      __onOffline: function() {
+        this._setOnline(false);
+      },
+
+      __computeWriteQueue: function(offlineNamespace) {
+        return new StorageWriteQueue(offlineNamespace);
       }
     });
   </script>

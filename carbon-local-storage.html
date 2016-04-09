@@ -32,7 +32,7 @@
       attached: function() {
         this.listen(window, 'storage', '__onStorage');
         this.listen(
-            window,
+            window.top,
             'carbon-local-storage-changed',
             '__onCarbonLocalStorageChanged');
       },
@@ -40,7 +40,7 @@
       detached: function() {
         this.unlisten(window, 'storage', '__onStorage');
         this.unlisten(
-            window,
+            window.top,
             'carbon-local-storage-changed',
             '__onCarbonLocalStorageChanged');
       },

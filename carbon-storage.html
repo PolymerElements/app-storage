@@ -27,6 +27,11 @@
           log: {
             type: Boolean,
             value: false
+          },
+
+          sequentialTransactions: {
+            type: Boolean,
+            value: false
           }
         },
 
@@ -35,17 +40,28 @@
         ],
 
         created: function() {
+          this.__initialized = false;
           this.__syncingToMemory = false;
+          this.__initialDataValue = null;
           this.__initializingStoredValue = null;
           this.__transactionQueueAdvances = Promise.resolve();
         },
 
         ready: function() {
-          this.__initializeStoredValue();
+          this.__initialDataValue = this.data;
+          this._initializeStoredValue();
         },
 
         get transactionsComplete() {
           return this.__transactionQueueAdvances;
+        },
+
+        get defaultDataValue() {
+          return this.__initialDataValue;
+        },
+
+        get zeroValue() {
+          return undefined;
         },
 
         /**
@@ -151,14 +167,18 @@
         },
 
         _enqueueTransaction: function(transaction) {
+          transaction = this.sequentialTransactions ?
+              transaction.bind(this) :
+              Promise.resolve().then(transaction.bind(this));
+
           return this.__transactionQueueAdvances = this.__transactionQueueAdvances
-              .then(transaction.bind(this))
+              .then(transaction)
               .catch(function(error) {
                 this.__error('Error performing queued transaction.', error);
               }.bind(this));
         },
 
-        __initializeStoredValue: function() {
+        _initializeStoredValue: function() {
           if (this.__initializingStoredValue) {
             return;
           }
@@ -166,10 +186,6 @@
           this.__group('Initializing stored value.');
 
           this.__initializingStoredValue = this._enqueueTransaction(function() {
-            // We may have already received a default value for storage. Grab a
-            // reference to it here:
-            var defaultData = this.data;
-
             if (this.new) {
               this.__log('Memory value is new; stored value initialization will be skipped.').
               return;
@@ -178,48 +194,28 @@
             // If this is not a "new" model, then we should attempt
             // to read an initial value from storage:
             return this._getStoredValue('data').then(function(data) {
-              if (data == undefined) {
-                return this._setStoredValue('data', defaultData);
+              console.log('Got stored value!', data);
+              if (data == null) {
+                return this._setStoredValue(
+                    'data', this.defaultDataValue || this.zeroValue);
               } else {
                 this.syncToMemory(function() {
                   this.set('data', data);
                 });
               }
             }.bind(this)).then(function() {
+              this.__initialized = true;
               this.__initializingStoredValue = null;
               this.__groupEnd('Initializing stored value.');
             }.bind(this));
           });
         },
 
-        __setStoredSplices: function(path, splices) {
-          return Promise.all(splices.map(function(splice) {
-            return Promise.all([
-              // TODO: Removed splices aren't getting removed:
-              this.__setStoredRange(
-                  path,
-                  splice.index,
-                  splice.removed.map(function() { return null; })),
-              this.__setStoredRange(
-                  path,
-                  splice.index,
-                  splice.object.slice(
-                      splice.index,
-                      splice.index + splice.addedCount))
-            ]);
-          }, this));
-        },
-
-        __setStoredRange: function(path, index, values) {
-          return Promise.all(values.map(function(value, valueIndex) {
-            return this._setStoredValue(
-                path + '.' + (index + valueIndex), value);
-          }, this));
-        },
-
         __dataChanged: function(change) {
+          console.log('wtf');
           if (this.__syncingToMemory ||
-              this.__initializingStoredValue ||
+              !this.__initialized ||
+              //this.__initializingStoredValue ||
               this.__pathCanBeIgnored(change.path)) {
             return;
           }
@@ -233,8 +229,8 @@
             this.__log('Setting', path + ':', indexSplices || value);
 
             if (indexSplices && this.__pathIsSplices(path)) {
-              return this.__setStoredSplices(
-                  this.__parentPath(path), indexSplices);
+              path = this.__parentPath(path);
+              value = this.get(path);
             }
 
             return this._setStoredValue(path, value);

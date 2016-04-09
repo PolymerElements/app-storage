@@ -1,3 +1,12 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
 <script>
 (function() {
   'use strict';
@@ -105,6 +114,62 @@
                   expect(value).to.be.eql([1, 2, 3, 4]);
                 });
           });
+
+          suite('manipulating arrays', function() {
+            setup(function() {
+              storage.set('data.arrayProperty', [1, 2, 3]);
+
+              return awaitStoredValue(storage, 'data.arrayProperty')
+                  .then(function(value) {
+                    expect(value).to.be.eql([1, 2, 3]);
+                  });
+            });
+
+            test('updates after array push', function() {
+              storage.push('data.arrayProperty', 4);
+
+              return awaitStoredValue(storage, 'data.arrayProperty')
+                  .then(function(value) {
+                    expect(value).to.be.eql([1, 2, 3, 4]);
+                  });
+            });
+
+            test('updates after array pop', function() {
+              storage.pop('data.arrayProperty');
+
+              return awaitStoredValue(storage, 'data.arrayProperty')
+                  .then(function(value) {
+                    expect(value).to.be.eql([1, 2]);
+                  });
+            });
+
+            test('updates after additive array splice', function() {
+              storage.splice('data.arrayProperty', 1, 0, 4);
+
+              return awaitStoredValue(storage, 'data.arrayProperty')
+                  .then(function(value) {
+                    expect(value).to.be.eql([1, 4, 2, 3]);
+                  });
+            });
+
+            test('updates after subtractive array splice', function() {
+              storage.splice('data.arrayProperty', 1, 1);
+
+              return awaitStoredValue(storage, 'data.arrayProperty')
+                  .then(function(value) {
+                    expect(value).to.be.eql([1, 3]);
+                  });
+            });
+
+            test('updates after complex array splice', function() {
+              storage.splice('data.arrayProperty', 1, 1, 4);
+
+              return awaitStoredValue(storage, 'data.arrayProperty')
+                  .then(function(value) {
+                    expect(value).to.be.eql([1, 4, 3]);
+                  });
+            });
+          });
         });
 
         suite('removing properties', function() {
@@ -185,6 +250,36 @@
             expect(value).to.be.equal(1);
             expect(storageOne.get('data.numberProperty')).to.be.equal(value);
             expect(storageTwo.get('data.numberProperty')).to.be.equal(value);
+          });
+        });
+
+        test('syncs object values across elements', function() {
+          var objectValue = { foo: 1 };
+          storageOne.set('data.objectProperty', objectValue);
+
+          return Promise.all([
+            awaitStoredValue(storageOne, 'data.objectProperty.foo'),
+            context.awaitUpdate(storageTwo)
+          ]).then(function(results) {
+            var value = results[0];
+            expect(value).to.be.equal(1);
+            expect(storageOne.get('data.objectProperty')).to.be.eql(objectValue);
+            expect(storageTwo.get('data.objectProperty')).to.be.eql(objectValue);
+          });
+        });
+
+        test('syncs array values across elements', function() {
+          var arrayValue = [1, 2, 3];
+          storageOne.set('data.arrayProperty', arrayValue);
+
+          return Promise.all([
+            awaitStoredValue(storageOne, 'data.arrayProperty.0'),
+            context.awaitUpdate(storageTwo)
+          ]).then(function(results) {
+            var value = results[0];
+            expect(value).to.be.equal(1);
+            expect(storageOne.get('data.arrayProperty')).to.be.eql(arrayValue);
+            expect(storageTwo.get('data.arrayProperty')).to.be.eql(arrayValue);
           });
         });
       });
