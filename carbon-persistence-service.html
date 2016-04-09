@@ -1,6 +1,6 @@
 <link rel="import" href="carbon-storage.html">
-<link rel="import" href="carbon-persistence-client.html">
 <link rel="import" href="carbon-network-status-behavior.html">
+<link rel="import" href="carbon-persistence-service/carbon-persistence-client.html">
 <dom-module id="carbon-persistence-service">
   <script>
     (() => {
@@ -11,7 +11,9 @@
 
         extends: 'carbon-storage',
 
-        behaviors: [Polymer.CarbonNetworkStatusBehavior],
+        behaviors: [
+          Polymer.CarbonNetworkStatusBehavior
+        ],
 
         properties: {
           store: {
@@ -22,14 +24,14 @@
           workerUrl: {
             type: String,
             value() {
-              return this.resolveUrl('carbon-persistence-service-worker.js');
+              return this.resolveUrl('carbon-persistence-service/carbon-persistence-service-worker.js');
             }
           },
 
           workerScope: {
             type: String,
             value() {
-              return this.resolveUrl('$carbon-persistence-service');
+              return this.resolveUrl('carbon-persistence-service/$carbon-persistence-service');
             }
           },
 
