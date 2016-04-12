@@ -1,4 +1,4 @@
-<link rel="import" href="carbon-storage.html">
+<link rel="import" href="carbon-storage-behavior.html">
 <dom-module id="carbon-firebase-query">
   <script>
     (function() {
@@ -7,7 +7,9 @@
       Polymer({
         is: 'carbon-firebase-query',
 
-        extends: 'carbon-storage',
+        behaviors: [
+          Polymer.CarbonStorageBehavior
+        ],
 
         properties: {
           location: {

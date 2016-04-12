@@ -1,4 +1,4 @@
-<link rel="import" href="carbon-storage.html">
+<link rel="import" href="carbon-storage-behavior.html">
 <link rel="import" href="carbon-network-status-behavior.html">
 <link rel="import" href="carbon-persistence-service/carbon-persistence-client.html">
 <dom-module id="carbon-persistence-service">
@@ -9,9 +9,8 @@
       Polymer({
         is: 'carbon-persistence-service',
 
-        extends: 'carbon-storage',
-
         behaviors: [
+          Polymer.CarbonStorageBehavior,
           Polymer.CarbonNetworkStatusBehavior
         ],
 

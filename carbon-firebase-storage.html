@@ -1,5 +1,5 @@
 <link rel="import" href="carbon-network-status-behavior.html">
-<link rel="import" href="carbon-storage.html">
+<link rel="import" href="carbon-storage-behavior.html">
 <script src="../firebase/firebase.js"></script>
 <script>
   'use strict';
@@ -7,9 +7,8 @@
   Polymer({
     is: 'carbon-firebase-storage',
 
-    extends: 'carbon-storage',
-
     behaviors: [
+      Polymer.CarbonStorageBehavior,
       Polymer.CarbonNetworkStatusBehavior
     ],
 
@@ -40,8 +39,29 @@
       }
     },
 
+    get isNew() {
+      return !this.location;
+    },
+
     get zeroValue() {
       return {};
+    },
+
+    save: function(parentLocation, key) {
+      var location;
+
+      if (key) {
+        location = parentLocation + '/' + key;
+        this.__setFirebaseValue(location, this.data);
+      } else {
+        location = new Firebase(parentLocation).push(this.data).toString();
+      }
+
+      this.location = location;
+    },
+
+    reset: function() {
+      this.location = null;
     },
 
     getStoredValue: function(path) {

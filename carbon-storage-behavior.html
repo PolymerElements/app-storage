@@ -9,15 +9,8 @@
       var LENGTH_RX = /\.length$/;
       var NUMBER_RX = /\.?#?([0-9]+)$/;
 
-      Polymer({
-        is: 'carbon-storage',
-
+      Polymer.CarbonStorageBehavior = {
         properties: {
-          new: {
-            type: Object,
-            value: false
-          },
-
           data: {
             type: Object,
             notify: true,
@@ -54,6 +47,10 @@
           this._initializeStoredValue();
         },
 
+        get isNew() {
+          return true;
+        },
+
         get transactionsComplete() {
           return this.__transactionQueueAdvances;
         },
@@ -64,6 +61,14 @@
 
         get zeroValue() {
           return undefined;
+        },
+
+        save: function() {
+          return Promise.resolve();
+        },
+
+        reset: function() {
+          return Promise.resolve();
         },
 
         /**
@@ -188,8 +193,8 @@
           this._group('Initializing stored value.');
 
           this.__initializingStoredValue = this._enqueueTransaction(function() {
-            if (this.new) {
-              this._log('Memory value is new; stored value initialization will be skipped.').
+            if (this.isNew) {
+              this._log('Memory value is new; stored value initialization will be skipped.');
               return;
             }
 
@@ -307,7 +312,7 @@
           var tail = path.split('.').pop();
           return window.parseInt(tail.replace(NUMBER_RX, '$1'), 10);
         }
-      });
+      };
     })();
   </script>
 </dom-module>
