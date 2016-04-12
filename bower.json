@@ -17,6 +17,13 @@
   },
   "devDependencies": {
     "web-component-tester": "^4.2.2",
-    "paper-input": "polymerelements/paper-input#^1.0.0"
+    "paper-input": "polymerelements/paper-input#^1.0.0",
+    "moment": "^2.12.0",
+    "paper-styles": "polymerelements/paper-styles#^1.0.0",
+    "font-roboto": "polymerelements/font-roboto#^1.0.0",
+    "iron-flex-layout": "polymerelements/iron-flex-layout#^1.0.0",
+    "iron-icon": "polymerelements/iron-icon#^1.0.0",
+    "paper-fab": "polymerelements/paper-fab#^1.0.0",
+    "iron-icons": "polymerelements/iron-icons#^1.0.0"
   }
 }

@@ -1,0 +1,80 @@
+<link rel="import" href="../../../paper-styles/shadow.html">
+<link rel="import" href="../../../paper-styles/typography.html">
+<dom-module id="na-note">
+  <template>
+    <style>
+      :host {
+        display: block;
+        background-color: #fafafa;
+        color: #212121;
+        padding: 1em;
+        @apply(--paper-font-common-base);
+        @apply(--shadow-elevation-2dp);
+      }
+
+      [hidden] {
+        display: none;
+      }
+
+      h1 {
+        font-size: 1.15em;
+        margin: 0;
+      }
+
+      h1:not([hidden])+p {
+        margin-top: 1em;
+      }
+
+      p {
+        margin: 0;
+        font-family: 'Roboto Slab', Times New Roman, serif;
+        font-size: 0.9em;
+      }
+
+      .empty {
+        font-style: italic;
+        color: #737373;
+      }
+    </style>
+    <h1 hidden$="[[propertiesAreEmpty(header)]]">[[header]]</h1>
+    <p hidden$="[[propertiesAreEmpty(body)]]">[[body]]</p>
+    <p class="empty" hidden$="[[!propertiesAreEmpty(header, body)]]">Tap to edit this note...</p>
+  </template>
+  <script>
+    Polymer({
+      is: 'na-note',
+
+      properties: {
+        editable: {
+          type: Boolean,
+          reflectToAttribute: true,
+          value: false
+        },
+
+        header: {
+          type: String,
+          value: ''
+        },
+
+        body: {
+          type: String,
+          value: ''
+        },
+
+        lastUpdated: {
+          type: Number,
+          value: 0
+        }
+      },
+
+      propertiesAreEmpty() {
+        for (var i = 0; i < arguments.length; ++i) {
+          if (arguments[i]) {
+            return false;
+          }
+        }
+        return true;
+      }
+    })
+  </script>
+</dom-module>
