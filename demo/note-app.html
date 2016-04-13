@@ -1,8 +1,4 @@
 <link rel="import" href="../../polymer/polymer.html">
-<link rel="import" href="../../paper-input/paper-input.html">
-<link rel="import" href="../carbon-firebase-storage.html">
-<link rel="import" href="../carbon-persistence-service.html">
-<link rel="import" href="note-app/na-note.html">
 <link rel="import" href="../../paper-styles/color.html">
 <link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../iron-icons/iron-icons.html">
@@ -10,6 +6,11 @@
 <link rel="import" href="../../font-roboto/roboto.html">
 <link rel="import" href="../../paper-fab/paper-fab.html">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab:400,700">
+
+<link rel="import" href="../carbon-persistence-service.html">
+<link rel="import" href="../carbon-firebase-query.html">
+<link rel="import" href="note-app/na-note.html">
+<link rel="import" href="note-app/na-editor.html">
 <dom-module id="note-app">
   <template>
 
@@ -28,12 +29,13 @@
         @apply(--layout-center);
         background-color: var(--paper-purple-500);
         color: var(--paper-purple-50);
-        padding: 0.35em 0.5em;
+        padding: 6px 8px;
       }
 
       h1 {
         font-size: 14px;
         flex-grow: 1;
+        margin: 9px 0;
       }
 
       iron-icon {
@@ -84,56 +86,50 @@
       <iron-icon icon="cloud-off" hidden$="[[online]]"></iron-icon>
     </header>
 
-    <carbon-firebase-storage
+    <carbon-firebase-query
         id="storage"
         location="https://carbon-firebase-test.firebaseio.com/demo/notes"
         data="{{data}}">
-    </carbon-firebase-storage>
+    </carbon-firebase-query>
 
     <carbon-persistence-service
         id="persistence"
+        store="notes"
         data="{{data}}"
         persisted-data="{{persistedData}}"
-        online="{{online}}">
+        online="{{online}}" log>
     </carbon-persistence-service>
 
     <div class="notes">
-      <na-note
-          header="Heya"
-          body="This is a note">
-      </na-note>
-      <na-note></na-note>
-      <na-note
-          header="Just a header">
-      </na-note>
-      <na-note
-          body="Just some awesome body content">
-      </na-note>
+      <template is="dom-repeat" items="[[persistedData]]" as="note">
+        <na-note
+            id$="[[note.$firebaseKey]]"
+            title="[[note.title]]"
+            body="[[note.body]]"
+            on-tap="edit">
+        </na-note>
+      </template>
     </div>
-    <paper-fab icon="add" disabled="[[!online]]"></paper-fab>
+
+    <paper-fab icon="add" disabled="[[!online]]" on-tap="create"></paper-fab>
+
+    <na-editor
+        id="editor"
+        base-location="https://carbon-firebase-test.firebaseio.com/demo/notes">
+    </na-editor>
+
   </template>
   <script>
     Polymer({
       is: 'note-app',
 
-      properties: {
-        dataOne: {
-          type: Object,
-          notify: true,
-          value: function() {
-            return {
-              foo: 'hello'
-            };
-          }
-        },
-        dataTwo: {
-          type: Object,
-          value: function() {
-            return {
-              foo: 'hello'
-            };
-          }
-        }
+      edit(event) {
+        let noteElement = Polymer.dom(event).localTarget;
+        this.$.editor.edit(noteElement);
+      },
+
+      create() {
+        this.$.editor.create();
       }
     });
   </script>

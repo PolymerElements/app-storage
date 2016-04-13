@@ -49,6 +49,10 @@
           '__updatePersistedData(client, online, data)'
         ],
 
+        get isNew() {
+          return false;
+        },
+
         setStoredValue(path, value) {
           console.log('set', arguments);
           return this.client.transaction('set', this.store, this.data);
@@ -57,6 +61,10 @@
         getStoredValue(path) {
           console.log('get', arguments);
           return this.client.transaction('get', this.store);
+        },
+
+        initializeStoredValue() {
+          return Promise.resolve();
         },
 
         __computeClient(workerUrl, workerScope) {

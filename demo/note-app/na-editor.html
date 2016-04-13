@@ -1,0 +1,201 @@
+<link rel="import" href="../../carbon-firebase-storage.html">
+<link rel="import" href="../../../paper-styles/color.html">
+<link rel="import" href="../../../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../../paper-button/paper-button.html">
+<dom-module id="na-editor">
+  <template>
+    <style>
+      :host {
+        display: none;
+        position: absolute;
+        overflow: hidden;
+        top: 46px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+      }
+
+      :host([active]) {
+        display: block;
+      }
+
+      :host(.open) {
+        background-color: var(--paper-purple-500);
+      }
+
+      paper-button {
+        color: var(--paper-purple-50);
+      }
+
+      #background {
+        display: block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        border-radius: 512px;
+        width: 256px;
+        height: 256px;
+        background-color: var(--paper-purple-500);
+        transform-origin: 128px 128px;
+      }
+
+      na-note {
+        display: block;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+      }
+
+      :host(.open) na-note {
+        position: relative;
+        margin: auto;
+        width: calc(100vw - 20px);
+        max-width: 480px;
+      }
+
+      .controls {
+        display: block;
+        position: relative;
+        margin: 10px auto;
+        width: calc(100vw - 20px);
+        max-width: 480px;
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
+        justify-content: flex-end;
+        transition: opacity 0.3s;
+        opacity: 0;
+      }
+
+      :host(.open) .controls {
+        opacity: 1;
+      }
+    </style>
+    <div id="background"></div>
+    <carbon-firebase-storage
+        id="firebase"
+        location="[[computeFirebaseLocation(baseLocation, noteId)]]"
+        data="{{note}}">
+    </carbon-firebase-storage>
+    <na-note id="note" title="{{note.title}}" body="{{note.body}}" editable></na-note>
+    <div class="controls">
+      <paper-button on-tap="close">Done</paper-button>
+    </div>
+  </template>
+  <script>
+    Polymer({
+      is: 'na-editor',
+
+      properties: {
+        baseLocation: {
+          type: String
+        },
+
+        noteId: {
+          type: String,
+          computed: 'computeNoteId(noteElement)'
+        },
+
+        note: {
+          type: Object
+        },
+
+        noteElement: {
+          type: HTMLElement,
+          value: null
+        },
+
+        active: {
+          type: Boolean,
+          reflectToAttribute: true,
+          readOnly: true,
+          value: false
+        },
+      },
+
+      edit(noteElement) {
+        this._setActive(true);
+        this.noteElement = noteElement;
+        this.noteElement.style.opacity = 0;
+        this.transitionInFrom(noteElement.getBoundingClientRect());
+      },
+
+      create() {
+        this._setActive(true);
+        this.note = { title: '', body: '' };
+        this.transitionInFrom(this.getBoundingClientRect());
+      },
+
+      close() {
+        if (this.noteElement) {
+          this.noteElement.style.opacity = 1;
+        } else {
+          this.$.firebase.save(this.baseLocation).then(() => {
+            this.$.firebase.reset();
+          });
+        }
+
+        this.transitionOut().then(() => {
+          Polymer.dom(this).classList.remove('open');
+          this.noteElement = null;
+          this._setActive(false);
+        });
+      },
+
+      transitionInFrom(rect) {
+        var targetRect = this.getBoundingClientRect();
+        var targetLeft = targetRect.width > 500 ?
+            targetRect.width / 2 - 240 : 10;
+        var targetWidth = targetRect.width > 500 ?
+            '480px' : 'calc(100vw - 20px)'
+        var noteAnimation = this.$.note.animate([{
+          transform: `translate(${rect.left}px,${rect.top - 46}px)`,
+          width: `${rect.width}px`,
+          easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
+        }, {
+          transform: `translate(${targetLeft}px, 0px)`,
+          width: targetWidth
+        }], 500);
+
+        var backgroundAnimation = this.$.background.animate([{
+          transform: `translate(${rect.left + rect.width / 2 - 128}px, ${rect.top - 46 + rect.height / 2 - 128}px) scale(0.1)`,
+          easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
+        }, {
+          transform: `scale(${targetRect.width / 256 * 4})`
+        }], 800);
+
+        noteAnimation.addEventListener('finish', () => {
+          Polymer.dom(this).classList.add('open');
+        });
+      },
+
+      transitionOut() {
+        var animation = this.animate([{
+          opacity: 0,
+          easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
+        }], 300);
+
+        this.$.note.animate([{
+          transform: 'translateY(10px) scale(0.9)',
+          opacity: 0,
+          easing: 'cubic-bezier(0.4, 0, 0.2, 1)'
+        }], 500);
+
+        return new Promise(resolve => {
+          animation.addEventListener('finish', resolve);
+        });
+      },
+
+      computeNoteId(noteElement) {
+        return noteElement && noteElement.id;
+      },
+
+      computeFirebaseLocation(baseLocation, noteId) {
+        if (!noteId) {
+          return null;
+        } else {
+          return baseLocation + '/' + noteId;
+        }
+      }
+    });
+  </script>
+</dom-module>

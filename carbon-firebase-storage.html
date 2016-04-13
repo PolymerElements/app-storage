@@ -48,20 +48,31 @@
     },
 
     save: function(parentLocation, key) {
-      var location;
+      return new Promise(function(resolve, reject) {
+        var location;
 
-      if (key) {
-        location = parentLocation + '/' + key;
-        this.__setFirebaseValue(location, this.data);
-      } else {
-        location = new Firebase(parentLocation).push(this.data).toString();
-      }
+        if (key) {
+          location = parentLocation + '/' + key;
+          resolve(this.__setFirebaseValue(location, this.data));
+        } else {
+          location = new Firebase(parentLocation)
+              .push(this.data, function(error) {
+                if (error) {
+                  reject(error);
+                  return;
+                }
 
-      this.location = location;
+                resolve();
+              }).toString();
+        }
+
+        this.location = location;
+      }.bind(this));
     },
 
     reset: function() {
       this.location = null;
+      return Promise.resolve();
     },
 
     getStoredValue: function(path) {

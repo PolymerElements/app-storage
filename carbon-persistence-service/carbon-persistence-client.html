@@ -52,6 +52,7 @@
       }
 
       connect() {
+        console.log('Connecting..');
         if (this[connected] || this[connectsToWorker]) {
           return this[connectsToWorker];
         }

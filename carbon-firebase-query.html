@@ -44,7 +44,6 @@
         },
 
         created: function() {
-          this.getPrototype('carbon-storage').created.call(this);
           this.__map = {};
         },
 
@@ -65,7 +64,7 @@
         },
 
         setStoredValue: function(storagePath, value) {
-          if (storagePath !== '/') {
+          if (storagePath !== '/' && storagePath.indexOf('$firebaseKey') < 0) {
             return this.__setFirebaseValue(storagePath, value);
           } else {
             return Promise.resolve();
@@ -136,6 +135,8 @@
           var value = snapshot.val();
           var key = snapshot.key();
 
+          value.$firebaseKey = key;
+
           this.__map[key] = value;
           this.push('data', value);
         },
@@ -160,12 +161,13 @@
 
           if (value) {
             var index = this.data.indexOf(value);
-            value = snapsnot.val();
+            value = snapshot.val();
+            value.$firebaseKey = key;
             this.__map[key] = value;
 
             this.async(function() {
               this.syncToMemory(function() {
-                this.set([data, index], value);
+                this.set(['data', index], value);
               });
             });
           }
@@ -173,7 +175,15 @@
 
         __setFirebaseValue: function(path, value) {
           this._log('Setting Firebase value at', path, 'to', value)
-          return this.firebase.child(path).set(value);
+          var key = value && value.$firebaseKey;
+          if (key) {
+            value.$firebaseKey = null;
+          }
+          var result = this.firebase.child(path).set(value);
+          if (key) {
+            value.$firebaseKey = key;
+          }
+          return result;
         }
       });
     })();

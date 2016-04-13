@@ -37,14 +37,12 @@
         created: function() {
           this.__initialized = false;
           this.__syncingToMemory = false;
-          this.__initialDataValue = null;
           this.__initializingStoredValue = null;
           this.__transactionQueueAdvances = Promise.resolve();
         },
 
         ready: function() {
-          this.__initialDataValue = this.data;
-          this._initializeStoredValue();
+          this.__initializeStoredValue();
         },
 
         get isNew() {
@@ -55,10 +53,6 @@
           return this.__transactionQueueAdvances;
         },
 
-        get defaultDataValue() {
-          return this.__initialDataValue;
-        },
-
         get zeroValue() {
           return undefined;
         },
@@ -67,8 +61,26 @@
           return Promise.resolve();
         },
 
-        reset: function() {
-          return Promise.resolve();
+        reset: function() {},
+
+        initializeStoredValue: function() {
+          if (this.isNew) {
+            return Promise.resolve();
+          }
+
+          // If this is not a "new" model, then we should attempt
+          // to read an initial value from storage:
+          return this._getStoredValue('data').then(function(data) {
+            this._log('Got stored value!', data);
+            if (data == null) {
+              return this._setStoredValue(
+                  'data', this.data || this.zeroValue);
+            } else {
+              this.syncToMemory(function() {
+                this.set('data', data);
+              });
+            }
+          }.bind(this));
         },
 
         /**
@@ -185,39 +197,6 @@
               }.bind(this));
         },
 
-        _initializeStoredValue: function() {
-          if (this.__initializingStoredValue) {
-            return;
-          }
-
-          this._group('Initializing stored value.');
-
-          this.__initializingStoredValue = this._enqueueTransaction(function() {
-            if (this.isNew) {
-              this._log('Memory value is new; stored value initialization will be skipped.');
-              return;
-            }
-
-            // If this is not a "new" model, then we should attempt
-            // to read an initial value from storage:
-            return this._getStoredValue('data').then(function(data) {
-              this._log('Got stored value!', data);
-              if (data == null) {
-                return this._setStoredValue(
-                    'data', this.defaultDataValue || this.zeroValue);
-              } else {
-                this.syncToMemory(function() {
-                  this.set('data', data);
-                });
-              }
-            }.bind(this)).then(function() {
-              this.__initialized = true;
-              this.__initializingStoredValue = null;
-              this._groupEnd('Initializing stored value.');
-            }.bind(this));
-          });
-        },
-
         _log: function() {
           if (this.log) {
             console.log.apply(console, arguments);
@@ -242,10 +221,30 @@
           }
         },
 
+        __initializeStoredValue: function() {
+          if (this.__initializingStoredValue) {
+            return;
+          }
+
+          this._group('Initializing stored value.');
+
+          var initializingStoredValue =
+              this.__initializingStoredValue =
+              this.initializeStoredValue().then(() => {
+                this.__initialized = true;
+                this.__initializingStoredValue = null;
+                this._groupEnd('Initializing stored value.');
+              });
+
+          return this._enqueueTransaction(function() {
+            return initializingStoredValue;
+          });
+        },
+
         __dataChanged: function(change) {
-          if (this.__syncingToMemory ||
+          if (this.isNew ||
+              this.__syncingToMemory ||
               !this.__initialized ||
-              //this.__initializingStoredValue ||
               this.__pathCanBeIgnored(change.path)) {
             return;
           }
