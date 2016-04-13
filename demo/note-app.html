@@ -43,7 +43,11 @@
       }
 
       .notes {
-        margin: 1em;
+        position: relative;
+        box-sizing: border-box;
+        padding: 1em;
+        max-height: calc(100vh - 46px);
+        overflow: scroll;
       }
 
       na-note {
@@ -123,9 +127,17 @@
     Polymer({
       is: 'note-app',
 
+      properties: {
+        online: {
+          type: Boolean
+        }
+      },
+
       edit(event) {
-        let noteElement = Polymer.dom(event).localTarget;
-        this.$.editor.edit(noteElement);
+        if (this.online) {
+          let noteElement = Polymer.dom(event).localTarget;
+          this.$.editor.edit(noteElement);
+        }
       },
 
       create() {

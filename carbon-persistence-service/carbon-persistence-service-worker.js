@@ -26,6 +26,10 @@
       });
 
       self.addEventListener(
+          'unhandledrejection', error => console.error(error));
+      self.addEventListener(
+          'error', error => console.error(error));
+      self.addEventListener(
           'message', message => this.handleGlobalMessage(message));
       console.log('CarbonPersistenceService started...');
     }

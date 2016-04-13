@@ -129,9 +129,11 @@
         if (this.noteElement) {
           this.noteElement.style.opacity = 1;
         } else {
-          this.$.firebase.save(this.baseLocation).then(() => {
-            this.$.firebase.reset();
-          });
+          if (this.note.title || this.note.body) {
+            this.$.firebase.save(this.baseLocation).then(() => {
+              this.$.firebase.reset();
+            });
+          }
         }
 
         this.transitionOut().then(() => {

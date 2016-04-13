@@ -19,6 +19,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <link rel="import" href="note-app.html">
+  <link rel="import" href="../../platinum-sw/platinum-sw-elements.html">
   <style>
     body {
       margin: 0;
@@ -27,6 +28,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </style>
 </head>
 <body unresolved>
+  <template is="dom-bind">
+    <platinum-sw-register
+        skip-waiting
+        auto-register
+        clients-claim
+        reload-on-install>
+      <platinum-sw-cache
+          default-cache-strategy="networkFirst">
+      </platinum-sw-cache>
+    </platinum-sw-register>
+  </template>
   <note-app></note-app>
 </body>
 </html>
