@@ -7,13 +7,12 @@
 <link rel="import" href="../../paper-fab/paper-fab.html">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab:400,700">
 
-<link rel="import" href="../carbon-persistence-service.html">
+<link rel="import" href="../carbon-mirror.html">
 <link rel="import" href="../carbon-firebase-query.html">
 <link rel="import" href="note-app/na-note.html">
 <link rel="import" href="note-app/na-editor.html">
 <dom-module id="note-app">
   <template>
-
     <style>
       :host {
         display: block;
@@ -96,13 +95,12 @@
         data="{{data}}">
     </carbon-firebase-query>
 
-    <carbon-persistence-service
-        id="persistence"
+    <carbon-mirror
         store="notes"
         data="{{data}}"
         persisted-data="{{persistedData}}"
-        online="{{online}}" log>
-    </carbon-persistence-service>
+        online="{{online}}">
+    </carbon-mirror>
 
     <div class="notes">
       <template is="dom-repeat" items="[[persistedData]]" as="note">

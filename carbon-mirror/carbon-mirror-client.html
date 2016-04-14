@@ -1,0 +1,84 @@
+<script>
+  (function() {
+    'use strict';
+
+    let workerUrl = Symbol('workerUrl');
+    let connectsToWorker = Symbol('connectsToWorker');
+    let connected = Symbol('connected');
+    let transactionId = Symbol('transactionId');
+    let worker = null;
+
+    Polymer.CarbonMirrorClient = class CarbonMirrorClient {
+      constructor(_workerUrl) {
+        this[workerUrl] = _workerUrl;
+        this[connected] = false;
+        this[transactionId] = 0;
+        this[connectsToWorker] = null;
+      }
+
+      transaction(method, key, value) {
+        return this.connect().then(worker => {
+          return new Promise(resolve => {
+            let id = this[transactionId]++;
+            let port = worker.port;
+
+            port.addEventListener('message', function onMessage(event) {
+              if (event.data &&
+                  event.data.type === 'carbon-mirror-transaction-result' &&
+                  event.data.id === id) {
+                port.removeEventListener('message', onMessage);
+                resolve(event.data.result);
+              }
+            });
+
+            port.postMessage({
+              type: 'carbon-mirror-transaction',
+              id,
+              method,
+              key,
+              value
+            });
+          });
+        });
+      }
+
+      connect() {
+        console.log('Connecting..');
+        if (this[connected] || this[connectsToWorker]) {
+          return this[connectsToWorker];
+        }
+
+        return this[connectsToWorker] = this.registerWorker().then(worker => {
+          return new Promise(resolve => {
+            worker.port.addEventListener('message', event => {
+              if (event.data &&
+                  event.data.type === 'carbon-mirror-connected') {
+                console.log('Connected!');
+                this[connected] = true;
+                resolve(worker);
+              }
+            });
+
+            worker.addEventListener('error', error => {
+              console.error(error.toString());
+            });
+
+            worker.port.start();
+            worker.port.postMessage({
+              type: 'carbon-mirror-connect'
+            });
+          });
+        });
+      }
+
+      registerWorker() {
+        return Promise.resolve(new SharedWorker(this[workerUrl]));
+        if (!worker) {
+          worker = new Worker(this[workerUrl]);
+        }
+
+        return Promise.resolve(worker);
+      }
+    }
+  })();
+</script>

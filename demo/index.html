@@ -28,17 +28,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </style>
 </head>
 <body unresolved>
-  <template is="dom-bind">
-    <platinum-sw-register
-        skip-waiting
-        auto-register
-        clients-claim
-        reload-on-install>
-      <platinum-sw-cache
-          default-cache-strategy="networkFirst">
-      </platinum-sw-cache>
-    </platinum-sw-register>
-  </template>
+  <platinum-sw-register
+      skip-waiting
+      auto-register
+      clients-claim
+      reload-on-install
+      href="../sw-import.js">
+    <platinum-sw-cache
+        default-cache-strategy="networkFirst">
+    </platinum-sw-cache>
+  </platinum-sw-register>
   <note-app></note-app>
 </body>
 </html>

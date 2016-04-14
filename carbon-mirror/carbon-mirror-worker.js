@@ -5,8 +5,8 @@
   let dbName = Symbol('dbName');
   let storeName = Symbol('storeName');
 
-  class CarbonPersistenceService {
-    constructor(_dbName='carbon-persistence', _storeName='persisted_data') {
+  class CarbonMirrorWorker {
+    constructor(_dbName='carbon-mirror', _storeName='mirrored_data') {
       // Maybe useful in case we want to notify clients of changes..
       this[dbName] = _dbName;
       this[storeName] = _storeName;
@@ -76,7 +76,7 @@
           'message', event => this.handleClientMessage(event, port));
       this[clientPorts].add(port);
       port.start();
-      port.postMessage({ type: 'carbon-persistence-connected' });
+      port.postMessage({ type: 'carbon-mirror-connected' });
     }
 
     handleClientMessage(event, port) {
@@ -86,40 +86,28 @@
       }
 
       switch(event.data.type) {
-        case 'carbon-persistence-transaction':
+        case 'carbon-mirror-transaction':
           let transaction = this.transaction(
               event.data.method, event.data.key, event.data.value);
           let id = event.data.id;
 
           transaction.then((result) => {
             port.postMessage({
-              type: 'carbon-persistence-transaction-result',
+              type: 'carbon-mirror-transaction-result',
               id,
               result
             });
           });
           break;
-        case 'carbon-persistence-disconnect':
+        case 'carbon-mirror-disconnect':
           this[clientPorts].remove(port);
           break;
       }
     }
-
-    handleGlobalMessage(event) {
-      console.log('Got global message!');
-      console.log(event.data);
-      if (event.data && event.data.type === 'carbon-persistence-connect') {
-        this.registerClient(event.ports[0]);
-      }
-    }
   }
 
-  self.addEventListener('install', event => {
-    self.skipWaiting();
-  });
+  self.carbonMirrorWorker = new CarbonMirrorWorker();
 
-  self.addEventListener('activate', event => {
-    event.waitUntil(self.clients.claim());
-    self.carbonPersistenceService = new CarbonPersistenceService();
-  });
+  self.addEventListener(
+      'connect', event => carbonMirrorWorker.registerClient(event.ports[0]));
 })();

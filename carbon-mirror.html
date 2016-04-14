@@ -1,13 +1,13 @@
 <link rel="import" href="carbon-storage-behavior.html">
 <link rel="import" href="carbon-network-status-behavior.html">
-<link rel="import" href="carbon-persistence-service/carbon-persistence-client.html">
-<dom-module id="carbon-persistence-service">
+<link rel="import" href="carbon-mirror/carbon-mirror-client.html">
+<dom-module id="carbon-mirror">
   <script>
     (() => {
       'use strict';
 
       Polymer({
-        is: 'carbon-persistence-service',
+        is: 'carbon-mirror',
 
         behaviors: [
           Polymer.CarbonStorageBehavior,
@@ -17,26 +17,19 @@
         properties: {
           store: {
             type: String,
-            value: 'carbon-persistence-default-store'
+            value: 'carbon-mirror-default-store'
           },
 
           workerUrl: {
             type: String,
             value() {
-              return this.resolveUrl('carbon-persistence-service/carbon-persistence-service-worker.js');
-            }
-          },
-
-          workerScope: {
-            type: String,
-            value() {
-              return this.resolveUrl('carbon-persistence-service/$carbon-persistence-service');
+              return this.resolveUrl('carbon-mirror/carbon-mirror-worker.js');
             }
           },
 
           client: {
-            type: Polymer.CarbonPersistenceClient,
-            computed: '__computeClient(workerUrl, workerScope)'
+            type: Polymer.CarbonMirrorClient,
+            computed: '__computeClient(workerUrl)'
           },
 
           persistedData: {
@@ -68,7 +61,7 @@
         },
 
         __computeClient(workerUrl, workerScope) {
-          return new Polymer.CarbonPersistenceClient(workerUrl, workerScope);
+          return new Polymer.CarbonMirrorClient(workerUrl);
         },
 
         __updatePersistedData(client, online, data) {
