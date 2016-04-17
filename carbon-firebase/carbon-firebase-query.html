@@ -1,4 +1,6 @@
-<link rel="import" href="carbon-storage-behavior.html">
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="carbon-firebase-database-behavior.html">
+<link rel="import" href="firebase.html">
 <dom-module id="carbon-firebase-query">
   <script>
     (function() {
@@ -8,22 +10,13 @@
         is: 'carbon-firebase-query',
 
         behaviors: [
-          Polymer.CarbonStorageBehavior
+          Polymer.CarbonFirebaseDatabaseBehavior
         ],
 
         properties: {
-          location: {
-            type: String
-          },
-
-          firebase: {
-            type: Object,
-            computed: '__computeFirebase(location)'
-          },
-
           query: {
             type: Object,
-            computed: '__computeQuery(firebase, orderByChild, limitToFirst, limitToLast)',
+            computed: '__computeQuery(ref, orderByChild, limitToFirst, limitToLast)',
             observer: '__queryChanged'
           },
 
@@ -64,49 +57,27 @@
         },
 
         setStoredValue: function(storagePath, value) {
-          if (storagePath !== '/' && storagePath.indexOf('$firebaseKey') < 0) {
-            return this.__setFirebaseValue(storagePath, value);
+          var storagePathParts = storagePath.split('/');
+          var lastPart = storagePathParts[storagePathParts.length - 1];
+
+          if (storagePathParts > 2 && lastPart !== '$firebaseKey') {
+            return this._setFirebaseValue(storagePath, value);
           } else {
             return Promise.resolve();
           }
         },
 
-        memoryPathToStoragePath: function(path) {
-          return '/' + path.replace(/^data\.?/, '').split('.').join('/');
-        },
-
-        storagePathToMemoryPath: function(storagePath) {
-          var path = 'data';
-
-          storagePath =
-              storagePath.replace('/', '').split('/').join('.');
-
-          if (storagePath) {
-            path += '.' + storagePath;
-          }
-
-          return path;
-        },
-
-        __computeFirebase: function(location) {
-          if (location == null) {
-            return null;
-          }
-
-          return new Firebase(location);
-        },
-
-        __computeQuery: function(firebase, orderByChild, limitToFirst, limitToLast) {
-          if (firebase == null) {
+        __computeQuery: function(ref, orderByChild, limitToFirst, limitToLast) {
+          if (ref == null) {
             return null;
           }
 
           var query;
 
           if (orderByChild) {
-            query = firebase.orderByChild(orderByChild);
+            query = ref.orderByChild(orderByChild);
           } else {
-            query = firebase.orderByKey();
+            query = ref.orderByKey();
           }
 
           if (limitToFirst) {
@@ -124,7 +95,6 @@
           }
 
           if (query) {
-            this.firebase.off();
             query.on('child_added', this.__onFirebaseChildAdded, this);
             query.on('child_removed', this.__onFirebaseChildRemoved, this);
             query.on('child_changed', this.__onFirebaseChildChanged, this);
@@ -133,7 +103,7 @@
 
         __onFirebaseChildAdded: function(snapshot) {
           var value = snapshot.val();
-          var key = snapshot.key();
+          var key = snapshot.key;
 
           value.$firebaseKey = key;
 
@@ -142,7 +112,7 @@
         },
 
         __onFirebaseChildRemoved: function(snapshot) {
-          var key = snapshot.key();
+          var key = snapshot.key;
           var value = this.__map[key];
 
           if (value) {
@@ -156,7 +126,7 @@
         },
 
         __onFirebaseChildChanged: function(snapshot) {
-          var key = snapshot.key();
+          var key = snapshot.key;
           var value = this.__map[key];
 
           if (value) {
@@ -171,19 +141,6 @@
               });
             });
           }
-        },
-
-        __setFirebaseValue: function(path, value) {
-          this._log('Setting Firebase value at', path, 'to', value)
-          var key = value && value.$firebaseKey;
-          if (key) {
-            value.$firebaseKey = null;
-          }
-          var result = this.firebase.child(path).set(value);
-          if (key) {
-            value.$firebaseKey = key;
-          }
-          return result;
         }
       });
     })();

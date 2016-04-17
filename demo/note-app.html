@@ -7,8 +7,8 @@
 <link rel="import" href="../../paper-fab/paper-fab.html">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab:400,700">
 
-<link rel="import" href="../carbon-mirror.html">
-<link rel="import" href="../carbon-firebase-query.html">
+<link rel="import" href="../carbon-mirror/carbon-mirror.html">
+<link rel="import" href="../carbon-firebase/carbon-firebase-query.html">
 <link rel="import" href="note-app/na-note.html">
 <link rel="import" href="note-app/na-editor.html">
 <dom-module id="note-app">
@@ -91,7 +91,8 @@
 
     <carbon-firebase-query
         id="storage"
-        location="https://carbon-firebase-test.firebaseio.com/demo/notes"
+        app-name="notes"
+        path="/notes"
         data="{{data}}">
     </carbon-firebase-query>
 

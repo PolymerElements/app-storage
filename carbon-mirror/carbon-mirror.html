@@ -1,6 +1,7 @@
-<link rel="import" href="carbon-storage-behavior.html">
-<link rel="import" href="carbon-network-status-behavior.html">
-<link rel="import" href="carbon-mirror/carbon-mirror-client.html">
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../carbon-storage-behavior.html">
+<link rel="import" href="../carbon-network-status-behavior.html">
+<link rel="import" href="carbon-mirror-client.html">
 <dom-module id="carbon-mirror">
   <script>
     (() => {
@@ -23,7 +24,7 @@
           workerUrl: {
             type: String,
             value() {
-              return this.resolveUrl('carbon-mirror/carbon-mirror-worker.js');
+              return this.resolveUrl('./carbon-mirror-worker.js');
             }
           },
 

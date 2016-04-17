@@ -3,6 +3,17 @@
   (function() {
     'use strict';
 
+    var networkStatusSubscribers = [];
+
+    function notifySubscribers() {
+      for (var i = 0; i < networkStatusSubscribers.length; ++i) {
+        networkStatusSubscribers[i].refreshNetworkStatus();
+      }
+    }
+
+    window.addEventListener('online', notifySubscribers);
+    window.addEventListener('offline', notifySubscribers);
+
     Polymer.CarbonNetworkStatusBehavior = {
       properties: {
         online: {
@@ -16,17 +27,19 @@
       },
 
       attached: function() {
-        this.listen(window, 'online', '__onNetworkStateChanged');
-        this.listen(window, 'offline', '__onNetworkStateChanged');
-        this.__onNetworkStateChanged();
+        networkStatusSubscribers.push(this);
+        this.refreshNetworkStatus();
       },
 
       detached: function() {
-        this.unlisten(window, 'online', '__onNetworkStateChanged');
-        this.unlisten(window, 'offline', '__onNetworkStateChanged');
+        var index = networkStatusSubscribers.indexOf(this);
+        if (index < -1) {
+          return;
+        }
+        networkStatusSubscribers.splice(index, 1);
       },
 
-      __onNetworkStateChanged: function() {
+      refreshNetworkStatus: function() {
         this._setOnline(window.navigator.onLine);
       }
     };

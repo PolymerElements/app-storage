@@ -1,4 +1,4 @@
-<link rel="import" href="../../carbon-firebase-storage.html">
+<link rel="import" href="../../carbon-firebase/carbon-firebase-document.html">
 <link rel="import" href="../../../paper-styles/color.html">
 <link rel="import" href="../../../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../../paper-button/paper-button.html">
@@ -71,11 +71,12 @@
       }
     </style>
     <div id="background"></div>
-    <carbon-firebase-storage
+    <carbon-firebase-document
         id="firebase"
-        location="[[computeFirebaseLocation(baseLocation, noteId)]]"
+        app-name="notes"
+        path="[[computeFirebasePath(noteId)]]"
         data="{{note}}">
-    </carbon-firebase-storage>
+    </carbon-firebase-document>
     <na-note id="note" title="{{note.title}}" body="{{note.body}}" editable></na-note>
     <div class="controls">
       <paper-button on-tap="close">Done</paper-button>
@@ -86,10 +87,6 @@
       is: 'na-editor',
 
       properties: {
-        baseLocation: {
-          type: String
-        },
-
         noteId: {
           type: String,
           computed: 'computeNoteId(noteElement)'
@@ -130,7 +127,7 @@
           this.noteElement.style.opacity = 1;
         } else {
           if (this.note.title || this.note.body) {
-            this.$.firebase.save(this.baseLocation).then(() => {
+            this.$.firebase.save('/notes').then(() => {
               this.$.firebase.reset();
             });
           }
@@ -191,11 +188,11 @@
         return noteElement && noteElement.id;
       },
 
-      computeFirebaseLocation(baseLocation, noteId) {
+      computeFirebasePath(noteId) {
         if (!noteId) {
           return null;
         } else {
-          return baseLocation + '/' + noteId;
+          return '/notes/' + noteId;
         }
       }
     });
