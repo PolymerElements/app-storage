@@ -12,8 +12,9 @@
   "dependencies": {
     "promise-polyfill": "polymerlabs/promise-polyfill#^v1.0.0",
     "polymer": "polymer/polymer#extends",
-    "firebase": "^2.4.2",
-    "indexeddb-promised": "jakearchibald/indexeddb-promised#master"
+    "firebase": "http://www.gstatic.com/firebasejs/staging/3.0.0-eap.5/firebase.js",
+    "indexeddb-promised": "jakearchibald/indexeddb-promised#master",
+    "pouchdb": "^5.3.1"
   },
   "devDependencies": {
     "web-component-tester": "^4.2.2",
