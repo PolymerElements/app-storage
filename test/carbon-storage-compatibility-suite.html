@@ -50,6 +50,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             storage.set('data.numberProperty', 1);
             return awaitStoredValue(storage, 'data.numberProperty')
                 .then(function(value) {
+                  storage;
                   expect(value).to.be.equal(1);
                 });
           });

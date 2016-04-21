@@ -186,9 +186,14 @@
         },
 
         _enqueueTransaction: function(transaction) {
-          transaction = this.sequentialTransactions ?
-              transaction.bind(this) :
-              Promise.resolve().then(transaction.bind(this));
+          if (this.sequentialTransactions) {
+            transaction = transaction.bind(this);
+          } else {
+            var result = transaction.call(this);
+            transaction = function() {
+              return result;
+            };
+          }
 
           return this.__transactionQueueAdvances = this.__transactionQueueAdvances
               .then(transaction)

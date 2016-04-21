@@ -25,14 +25,14 @@
       ],
 
       memoryPathToStoragePath: function(path) {
-        return '/' + path.replace(/^data\.?/, '').split('.').join('/');
+        return this.path + path.replace(/^data\.?/, '/').split('.').join('/');
       },
 
       storagePathToMemoryPath: function(storagePath) {
         var path = 'data';
 
         storagePath =
-            storagePath.replace('/', '').split('/').join('.');
+            storagePath.replace(this.path, '').split('/').join('.');
 
         if (storagePath) {
           path += '.' + storagePath;
@@ -47,7 +47,7 @@
         if (key) {
           value.$firebaseKey = null;
         }
-        var result = this.ref.child(path).set(value);
+        var result = firebase.database(this.app).ref(path).set(value);
         if (key) {
           value.$firebaseKey = key;
         }
