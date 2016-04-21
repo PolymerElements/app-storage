@@ -8,7 +8,7 @@
     let transactionId = Symbol('transactionId');
     let worker = null;
 
-    Polymer.CarbonMirrorClient = class CarbonMirrorClient {
+    Polymer.CarbonIndexedDBMirrorClient = class CarbonIndexedDBMirrorClient {
       constructor(_workerUrl) {
         this[workerUrl] = _workerUrl;
         this[connected] = false;

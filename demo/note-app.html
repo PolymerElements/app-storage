@@ -7,7 +7,7 @@
 <link rel="import" href="../../paper-fab/paper-fab.html">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab:400,700">
 
-<link rel="import" href="../carbon-mirror/carbon-mirror.html">
+<link rel="import" href="../carbon-indexeddb-mirror/carbon-indexeddb-mirror.html">
 <link rel="import" href="../carbon-firebase/carbon-firebase-query.html">
 <link rel="import" href="note-app/na-note.html">
 <link rel="import" href="note-app/na-editor.html">
@@ -96,12 +96,12 @@
         data="{{data}}">
     </carbon-firebase-query>
 
-    <carbon-mirror
+    <carbon-indexeddb-mirror
         store="notes"
         data="{{data}}"
         persisted-data="{{persistedData}}"
         online="{{online}}">
-    </carbon-mirror>
+    </carbon-indexeddb-mirror>
 
     <div class="notes">
       <template is="dom-repeat" items="[[persistedData]]" as="note">

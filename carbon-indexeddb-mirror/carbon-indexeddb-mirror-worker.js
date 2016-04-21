@@ -5,7 +5,7 @@
   let dbName = Symbol('dbName');
   let storeName = Symbol('storeName');
 
-  class CarbonMirrorWorker {
+  class CarbonIndexedDBMirrorWorker {
     constructor(_dbName='carbon-mirror', _storeName='mirrored_data') {
       // Maybe useful in case we want to notify clients of changes..
       this[dbName] = _dbName;
@@ -31,11 +31,10 @@
           'error', error => console.error(error));
       self.addEventListener(
           'message', message => this.handleGlobalMessage(message));
-      console.log('CarbonPersistenceService started...');
+      console.log('CarbonIndexedDBMirrorWorker started...');
     }
 
     transaction(method, key, value=null) {
-      console.log.apply(console, arguments);
       switch(method) {
         case 'get':
           return this.get(key);
@@ -45,7 +44,7 @@
     }
 
     get(key) {
-      return this.dbOpens.then((db) => {
+      return this.dbOpens.then(db => {
         return new Promise((resolve, reject) => {
           let transaction = db.transaction(this[storeName], 'readonly');
           let store = transaction.objectStore(this[storeName]);
@@ -58,7 +57,7 @@
     }
 
     set(key, value) {
-      return this.dbOpens.then((db) => {
+      return this.dbOpens.then(db => {
         return new Promise((resolve, reject) => {
           let transaction = db.transaction(this[storeName], 'readwrite');
           let store = transaction.objectStore(this[storeName]);
@@ -71,7 +70,6 @@
     }
 
     registerClient(port) {
-      console.log('Registering client', port)
       port.addEventListener(
           'message', event => this.handleClientMessage(event, port));
       this[clientPorts].add(port);
@@ -80,7 +78,6 @@
     }
 
     handleClientMessage(event, port) {
-      console.log(event.data);
       if (!event.data) {
         return;
       }
@@ -106,8 +103,9 @@
     }
   }
 
-  self.carbonMirrorWorker = new CarbonMirrorWorker();
+  self.carbonIndexedDBMirrorWorker = new CarbonIndexedDBMirrorWorker();
 
   self.addEventListener(
-      'connect', event => carbonMirrorWorker.registerClient(event.ports[0]));
+      'connect',
+      event => carbonIndexedDBMirrorWorker.registerClient(event.ports[0]));
 })();

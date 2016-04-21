@@ -1,14 +1,14 @@
 <link rel="import" href="../../polymer/polymer.html">
 <link rel="import" href="../carbon-storage-behavior.html">
 <link rel="import" href="../carbon-network-status-behavior.html">
-<link rel="import" href="carbon-mirror-client.html">
-<dom-module id="carbon-mirror">
+<link rel="import" href="carbon-indexeddb-mirror-client.html">
+<dom-module id="carbon-indexeddb-mirror">
   <script>
     (() => {
       'use strict';
 
       Polymer({
-        is: 'carbon-mirror',
+        is: 'carbon-indexeddb-mirror',
 
         behaviors: [
           Polymer.CarbonStorageBehavior,
@@ -24,12 +24,12 @@
           workerUrl: {
             type: String,
             value() {
-              return this.resolveUrl('./carbon-mirror-worker.js');
+              return this.resolveUrl('./carbon-indexeddb-mirror-worker.js');
             }
           },
 
           client: {
-            type: Polymer.CarbonMirrorClient,
+            type: Polymer.CarbonIndexedDBMirrorClient,
             computed: '__computeClient(workerUrl)'
           },
 
@@ -48,12 +48,10 @@
         },
 
         setStoredValue(path, value) {
-          console.log('set', arguments);
           return this.client.transaction('set', this.store, this.data);
         },
 
         getStoredValue(path) {
-          console.log('get', arguments);
           return this.client.transaction('get', this.store);
         },
 
@@ -62,7 +60,7 @@
         },
 
         __computeClient(workerUrl, workerScope) {
-          return new Polymer.CarbonMirrorClient(workerUrl);
+          return new Polymer.CarbonIndexedDBMirrorClient(workerUrl);
         },
 
         __updatePersistedData(client, online, data) {
