@@ -11,39 +11,39 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>carbon-local-storage tests</title>
+  <title>carbon-localstorage tests</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 
-  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../../web-component-tester/browser.js"></script>
 
-  <link rel="import" href="carbon-storage-compatibility-suite.html">
-  <link rel="import" href="../carbon-local-storage.html">
+  <link rel="import" href="../carbon-storage-compatibility-suite.html">
+  <link rel="import" href="../../carbon-localstorage/carbon-localstorage-document.html">
 </head>
 <body>
 
   <test-fixture id="BasicStorage">
     <template>
-      <carbon-local-storage key="carbon-local-storage-test" data="{}" log>
-      </carbon-local-storage>
+      <carbon-localstorage-document key="carbon-localstorage-test" data="{}" log>
+      </carbon-localstorage-document>
     </template>
   </test-fixture>
 
   <test-fixture id="SyncingStorage">
     <template>
-      <carbon-local-storage key="carbon-local-storage-test" data="{}" log>
-      </carbon-local-storage>
-      <carbon-local-storage key="carbon-local-storage-test" data="{}" log>
-      </carbon-local-storage>
+      <carbon-localstorage-document key="carbon-localstorage-test" data="{}" log>
+      </carbon-localstorage-document>
+      <carbon-localstorage-document key="carbon-localstorage-test" data="{}" log>
+      </carbon-localstorage-document>
     </template>
   </test-fixture>
 
   <script>
-    testCarbonStorageCompatibility({
-      tagName: 'carbon-local-storage',
+    testCarbonStorageDocumentCompatibility({
+      tagName: 'carbon-localstorage-document',
       fetchStoredValue: function(storagePath) {
         var parts = storagePath.split('.');
-        var value = JSON.parse(localStorage.getItem('carbon-local-storage-test'));
+        var value = JSON.parse(localStorage.getItem('carbon-localstorage-test'));
 
         parts.shift();
 

@@ -1,10 +1,11 @@
-<link rel="import" href="carbon-storage-behavior.html">
-<dom-module id="carbon-local-storage">
+<link rel="import" href="../carbon-storage-behavior.html">
+<link rel="import" href="../../polymer/polymer.html">
+<dom-module id="carbon-localstorage-document">
   <script>
     'use strict';
 
     Polymer({
-      is: 'carbon-local-storage',
+      is: 'carbon-localstorage-document',
 
       behaviors: [
         Polymer.CarbonStorageBehavior
@@ -47,6 +48,22 @@
             '__onCarbonLocalStorageChanged');
       },
 
+      get isNew() {
+        return !this.key;
+      },
+
+      save: function(key) {
+        try {
+          this.__setStorageValue(key, this.data);
+        } catch(e) {
+          return Promise.reject(e);
+        }
+
+        this.key = key;
+
+        return Promise.resolve();
+      },
+
       getStoredValue: function(path) {
         var value;
 
@@ -72,7 +89,7 @@
       setStoredValue: function(path, value) {
         if (this.key != null) {
           try {
-            this.storage.setItem(this.key, JSON.stringify(this.data));
+            this.__setStorageValue(this.key, this.data);
           } catch (e) {
             return Promise.reject(e);
           }
@@ -120,6 +137,10 @@
         } catch(e) {
           console.error('Failed to parse value from storage for', this.key);
         }
+      },
+
+      __setStorageValue: function(key, value) {
+        this.storage.setItem(this.key, JSON.stringify(this.data));
       }
     });
   </script>
