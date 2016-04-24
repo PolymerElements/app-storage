@@ -19,12 +19,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
       fetchStoredValue: function() {
         return Promise.resolve();
+      },
+      unsetValue: function(storage) {
+        storage.set('data', null);
+        return storage.transactionsComplete;
       }
     };
 
     function awaitStoredValue(storage, path) {
       return storage.transactionsComplete.then(function() {
-        return context.fetchStoredValue(storage.memoryPathToStoragePath(path));
+        return context.fetchStoredValue(
+            storage.memoryPathToStoragePath(path), storage);
       });
     }
 
@@ -41,8 +46,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
         teardown(function() {
-          storage.set('data', null);
-          return storage.transactionsComplete;
+          return context.unsetValue(storage);
         });
 
         suite('setting properties', function() {
@@ -231,13 +235,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
         teardown(function() {
-          storageOne.set('data', null);
-          storageTwo.set('data', null);
-
-          return Promise.all([
-            storageOne.transactionsComplete,
-            storageTwo.transactionsComplete
-          ]);
+          context.unsetValue(storageOne);
+          return context.awaitUpdate(storageTwo).then(function() {
+            expect(storageTwo.data).to.be.eql(storageOne.data);
+          });
         });
 
         test('syncs primitives across elements', function() {

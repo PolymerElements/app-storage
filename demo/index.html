@@ -38,6 +38,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
   <link rel="import" href="../../platinum-sw/platinum-sw-elements.html">
   <link rel="import" href="../carbon-firebase/carbon-firebase-app.html">
+  <link rel="import" href="../carbon-pouchdb/carbon-pouchdb-document.html">
   <link rel="import" href="note-app.html">
   <style>
     body {
@@ -65,6 +66,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       auth-domain="carbon-storage-demo-3e146.firebaseapp.com"
       database-url="https://carbon-storage-demo-3e146.firebaseio.com">
   </carbon-firebase-app>
+
+  <carbon-pouchdb-document
+      db-name="testdb">
+  </carbon-pouchdb-document>
 
   <!-- Instantiate the Notes app: -->
   <note-app></note-app>

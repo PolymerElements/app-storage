@@ -1,0 +1,141 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../carbon-storage-behavior.html">
+<link rel="import" href="pouchdb.html">
+<script>
+  (function() {
+    'use strict';
+
+    Polymer.CarbonPouchDBDatabaseBehaviorImpl = {
+      properties: {
+        adapter: {
+          type: String,
+          value: null
+        },
+
+        dbName: {
+          type: String
+        },
+
+        revsLimit: {
+          type: Number,
+          value: 0
+        },
+
+        db: {
+          type: Object,
+          computed: '__computeDb(dbName, adapter, revsLimit)',
+          notify: true,
+        },
+
+        upsert: {
+          type: Boolean,
+          value: false
+        },
+
+        resolveConflict: {
+          type: Function,
+          value: null
+        }
+      },
+
+      _put: function(path, value, doc) {
+        if (this.upsert) {
+          return this._upsert(path, value, doc);
+        } else {
+          return this._conflictAwareTransaction('put', doc);
+        }
+      },
+
+      _post: function(doc) {
+        if (this.upsert) {
+          return this._upsert('data', doc, doc);
+        } else {
+          return this._conflictAwareTransaction('post', doc);
+        }
+      },
+
+      _upsert: function(path, value, doc) {
+        return this.db.get(doc._id).then(function(existingDoc) {
+          // Update...
+          if (path === 'data') {
+            value._rev = existingDoc._rev;
+            value._id = existingDoc._id;
+            doc = value;
+          } else {
+            this.set(path, value, {
+              data: existingDoc
+            });
+            doc = existingDoc;
+          }
+
+          return this._conflictAwareTransaction('put', doc);
+        }.bind(this)).catch(function(error) {
+          if (error.status === 404) {
+            // Insert...
+            return this._conflictAwareTransaction('post', doc);
+          }
+
+          throw error;
+        }.bind(this));
+      },
+
+      _conflictAwareTransaction: function(method, doc) {
+        if (!method in this.db) {
+          return Promise.reject('No such method:', method);
+        }
+
+        return this.db[method](doc).catch(function(error) {
+          var conflictResolver = null;
+          if (error && error.status === 409) {
+            this._log(this.id, 'Conflict for', method, doc._id, error._rev, error._conflicts);
+            conflictResolver = this.resolveConflict;
+
+            this.fire('carbon-pouchdb-conflict', {
+              resolveConflict: function(_conflictResolver) {
+                if (_conflictResolver) {
+                  conflictResolver = _conflictResolver;
+                }
+              }.bind(this)
+            });
+
+            if (conflictResolver) {
+              this._log(this.id, 'Attempting conflict resolution..', method, doc);
+              return Promise.resolve(conflictResolver.call(this, this.db, method, doc, error));
+            }
+          }
+
+          throw error;
+        }.bind(this));
+      },
+
+      __computeDb: function(name, revsLimit, adapter) {
+        if (this.db) {
+          this.db.removeAllListeners();
+        }
+
+        if (!name) {
+          return null;
+        }
+
+        var options = {
+          auto_compaction: true
+        };
+
+        if (adapter) {
+          options.adapter = adapter;
+        }
+
+        if (revsLimit) {
+          options.revs_limit = revsLimit;
+        }
+
+        return new PouchDB(name, options);
+      }
+    };
+
+    Polymer.CarbonPouchDBDatabaseBehavior = [
+      Polymer.CarbonStorageBehavior,
+      Polymer.CarbonPouchDBDatabaseBehaviorImpl
+    ];
+  })();
+</script>

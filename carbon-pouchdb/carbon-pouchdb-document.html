@@ -1,0 +1,126 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="carbon-pouchdb-database-behavior.html">
+<link rel="import" href="pouchdb.html">
+<script>
+  (function() {
+    'use strict';
+
+    Polymer({
+      is: 'carbon-pouchdb-document',
+
+      behaviors: [
+        Polymer.CarbonPouchDBDatabaseBehavior
+      ],
+
+      properties: {
+        docId: {
+          type: String,
+          value: null
+        },
+
+        rev: {
+          type: String,
+          readOnly: true,
+          value: null
+        },
+
+        changes: {
+          type: Object,
+          computed: '__computeChanges(db, docId)'
+        }
+      },
+
+      observers: [
+        '__docRevChanged(data._rev)',
+        '__docChanged(data, docId)'
+      ],
+
+      get isNew() {
+        return this.docId == null;
+      },
+
+      get zeroValue() {
+        return {};
+      },
+
+      save: function() {
+        if (!this.db) {
+          return Promise.reject('No PouchDB instance available!');
+        }
+
+        if (this.docId) {
+          this.data._id = this.docId;
+        }
+
+        return this._upsert(this.data).then(function(response) {
+          this.syncToMemory(function() {
+            this.docId = response.id;
+            this.set('data._id', response.id);
+            this.set('data._rev', response.rev);
+          });
+        });
+      },
+
+      reset: function() {
+        this.docId = null;
+        this.data = this.zeroValue;
+      },
+
+      getStoredValue: function(storagePath) {
+        return this.db.get(this.docId).then(function(doc) {
+          return this.get(storagePath, {
+            data: doc
+          });
+        }.bind(this)).catch(function(error) {
+          if (error && error.status === 404) {
+            return;
+          } else {
+            throw error;
+          }
+        });
+      },
+
+      setStoredValue: function(storagePath, value) {
+        if (storagePath === 'data' && value == null) {
+          return Promise.reject(
+              ['Unsupported attempt to unset PouchDB document by assigning null value.',
+               'Perhaps you meant to set `data._deleted = true`?'].join(' '));
+        }
+
+        return this._put(storagePath, value, this.data);
+      },
+
+      __docChanged: function(doc, docId) {
+        if (doc != null && docId != null && doc._id != docId) {
+          doc._id = this.docId;
+        }
+      },
+
+      __docRevChanged: function() {
+        this._setRev(this.data != null ? this.data._rev : null);
+      },
+
+      __computeChanges: function(db, docId) {
+        if (this.changes) {
+          this.changes.removeAllListeners();
+        }
+
+        if (db == null || docId == null) {
+          return null;
+        }
+
+        return db.changes({
+          since: 'now',
+          live: true,
+          doc_ids: [docId],
+          include_docs: true,
+        }).on('change', function(change) {
+          var doc = change.doc;
+          this.syncToMemory(function() {
+            this.set('data', doc);
+          });
+        }.bind(this));
+      }
+    });
+  })();
+</script>

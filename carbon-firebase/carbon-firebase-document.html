@@ -69,7 +69,6 @@
       return new Promise(function(resolve, reject) {
           this.ref.child(path).once('value', function(snapshot) {
             var value = snapshot.val();
-            console.log('GOT FIREBASE VALUE', value);
             if (value == null) {
               resolve(this.zeroValue);
             }
@@ -95,7 +94,7 @@
     __onFirebaseValue: function(snapshot) {
       var value = snapshot.val();
 
-      if (value == null && this.valueIsEmpty(this.data)) {
+      if (value == null) {
         value = this.zeroValue;
       }
 

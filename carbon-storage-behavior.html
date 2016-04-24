@@ -71,7 +71,7 @@
           // If this is not a "new" model, then we should attempt
           // to read an initial value from storage:
           return this._getStoredValue('data').then(function(data) {
-            this._log('Got stored value!', data);
+            this._log('Got stored value!', data, this.data);
             if (data == null) {
               return this._setStoredValue(
                   'data', this.data || this.zeroValue);
