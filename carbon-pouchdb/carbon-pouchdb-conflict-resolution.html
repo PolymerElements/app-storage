@@ -5,7 +5,7 @@
     'use strict';
 
     Polymer({
-      is: 'carbon-pouchdb-conflict-resolver',
+      is: 'carbon-pouchdb-conflict-resolution',
 
       properties: {
         strategy: {
@@ -44,6 +44,10 @@
         }
 
         event.detail.resolveConflict(this[this.strategy].bind(this));
+
+        if (!this.allowAncestralResolution) {
+          event.stopImmediatePropagation();
+        }
       },
 
       firstWriteWins: function(db, method, doc, error) {

@@ -1,11 +1,10 @@
 <link rel="import" href="../../polymer/polymer.html">
-<link rel="import" href="../carbon-storage-behavior.html">
 <link rel="import" href="pouchdb.html">
 <script>
   (function() {
     'use strict';
 
-    Polymer.CarbonPouchDBDatabaseBehaviorImpl = {
+    Polymer.CarbonPouchDBDatabaseBehavior = {
       properties: {
         adapter: {
           type: String,
@@ -132,10 +131,5 @@
         return new PouchDB(name, options);
       }
     };
-
-    Polymer.CarbonPouchDBDatabaseBehavior = [
-      Polymer.CarbonStorageBehavior,
-      Polymer.CarbonPouchDBDatabaseBehaviorImpl
-    ];
   })();
 </script>

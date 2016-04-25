@@ -1,4 +1,5 @@
 <link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../carbon-storage-behavior.html">
 <link rel="import" href="carbon-pouchdb-database-behavior.html">
 <link rel="import" href="pouchdb.html">
 <script>
@@ -9,6 +10,7 @@
       is: 'carbon-pouchdb-document',
 
       behaviors: [
+        Polymer.CarbonStorageBehavior,
         Polymer.CarbonPouchDBDatabaseBehavior
       ],
 

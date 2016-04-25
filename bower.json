@@ -14,7 +14,8 @@
     "polymer": "polymer/polymer#extends",
     "firebase": "http://www.gstatic.com/firebasejs/staging/3.0.0-eap.5/firebase.js",
     "indexeddb-promised": "jakearchibald/indexeddb-promised#master",
-    "pouchdb": "^5.3.1"
+    "pouchdb": "^5.3.1",
+    "pouchdb-find": "^0.9.0"
   },
   "devDependencies": {
     "web-component-tester": "^4.2.2",

@@ -1,0 +1,84 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="carbon-pouchdb-database-behavior.html">
+<link rel="import" href="pouchdb.html">
+<link rel="import" href="pouchdb.find.html">
+<script>
+  (function() {
+    'use strict';
+
+    Polymer({
+      is: 'carbon-pouchdb-index',
+
+      behaviors: [
+        Polymer.CarbonPouchDBDatabaseBehavior
+      ],
+
+      properties: {
+        fields: {
+          type: Array
+        },
+
+        name: {
+          type: String,
+          value: null
+        },
+
+        ddoc: {
+          type: String,
+          value: null
+        },
+
+        type: {
+          type: String,
+          value: 'json'
+        },
+
+        index: {
+          type: Object,
+          computed: '__computeIndex(fields.*, name, ddoc, type)'
+        }
+      },
+
+      observers: [
+        '__createIndex(db, index)'
+      ],
+
+      __createIndex: function() {
+        if (this.index == null) {
+          throw new Error('Index not configured!');
+        }
+
+        this.db.createIndex({
+          index: this.index
+        }).catch(function(error) {
+          this._error(error);
+        }.bind(this));
+      },
+
+      __computeIndex: function() {
+        var index;
+
+        if (!this.fields || !this.fields.length) {
+          return null;
+        }
+
+        index = {};
+        index.fields = this.fields;
+
+        if (this.name != null) {
+          index.name = this.name;
+        }
+
+        if (this.ddoc != null) {
+          index.ddoc = this.ddoc;
+        }
+
+        if (this.type != null) {
+          index.type = this.type;
+        }
+
+        return index;
+      }
+    });
+  })();
+</script>

@@ -20,7 +20,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <link rel="import" href="../carbon-storage-compatibility-suite.html">
   <link rel="import" href="../../carbon-pouchdb/pouchdb.html">
   <link rel="import" href="../../carbon-pouchdb/carbon-pouchdb-document.html">
-  <link rel="import" href="../../carbon-pouchdb/carbon-pouchdb-conflict-resolver.html">
+  <link rel="import" href="../../carbon-pouchdb/carbon-pouchdb-conflict-resolution.html">
 </head>
 <body>
 
@@ -45,9 +45,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           db-name="test-db"
           doc-id="test-doc" upsert>
       </carbon-pouchdb-document>
-      <carbon-pouchdb-conflict-resolver
+      <carbon-pouchdb-conflict-resolution
           strategy="firstWriteWins">
-      </carbon-pouchdb-conflict-resolver>
+      </carbon-pouchdb-conflict-resolution>
     </template>
   </test-fixture>
 
