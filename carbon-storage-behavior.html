@@ -42,7 +42,7 @@
         },
 
         ready: function() {
-          this.__initializeStoredValue();
+          this._initializeStoredValue();
         },
 
         get isNew() {
@@ -226,7 +226,7 @@
           }
         },
 
-        __initializeStoredValue: function() {
+        _initializeStoredValue: function() {
           if (this.__initializingStoredValue) {
             return;
           }
