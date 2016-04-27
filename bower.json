@@ -10,9 +10,9 @@
   "homepage": "",
   "private": true,
   "dependencies": {
-    "promise-polyfill": "polymerlabs/promise-polyfill#^v1.0.0",
-    "polymer": "polymer/polymer#extends",
-    "firebase": "http://www.gstatic.com/firebasejs/staging/3.0.0-eap.5/firebase.js",
+    "promise-polyfill": "polymerlabs/promise-polyfill#^1.0.0",
+    "polymer": "polymer/polymer#^1.2.0",
+    "firebase": "http://www.gstatic.com/firebasejs/staging/3.0.0-eap.5/firebase.js"
   },
   "devDependencies": {
     "web-component-tester": "^4.2.2",
