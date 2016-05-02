@@ -16,9 +16,14 @@
         ],
 
         properties: {
-          store: {
+          key: {
             type: String,
-            value: 'carbon-mirror-default-store'
+            value: 'carbon-mirror-default-key'
+          },
+
+          session: {
+            type: String,
+            value: null
           },
 
           workerUrl: {
@@ -40,7 +45,7 @@
         },
 
         observers: [
-          '__updatePersistedData(client, online, data)'
+          '__updatePersistedData(client, session, online, data)'
         ],
 
         get isNew() {
@@ -48,22 +53,24 @@
         },
 
         setStoredValue(path, value) {
-          return this.client.transaction('set', this.store, this.data);
+          return this.client.transaction('set', this.key, this.data);
         },
 
         getStoredValue(path) {
-          return this.client.transaction('get', this.store);
+          return this.client.transaction('get', this.key);
         },
 
         initializeStoredValue() {
           return Promise.resolve();
         },
 
-        __computeClient(workerUrl, workerScope) {
+        __computeClient(workerUrl) {
           return new Polymer.CarbonIndexedDBMirrorClient(workerUrl);
         },
 
-        __updatePersistedData(client, online, data) {
+        __updatePersistedData(client, session, online, data) {
+          this.client.validateSession(session);
+
           if (online) {
             this.persistedData = data;
             this.linkPaths('data', 'persistedData');
@@ -71,7 +78,7 @@
           } else {
             this.unlinkPaths('data', 'persistedData');
             this.unlinkPaths('persistedData', 'data');
-            this.getStoredValue().then((value) => {
+            this.getStoredValue().then(value => {
               // We may have gone online since retrieving the persisted value..
               if (this.online) {
                 return;
