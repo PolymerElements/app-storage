@@ -52,8 +52,16 @@
           return false;
         },
 
+        destroy() {
+          return this.client.transaction('set', this.key, null);
+        },
+
         setStoredValue(path, value) {
-          return this.client.transaction('set', this.key, this.data);
+          if (this.online) {
+            return this.client.transaction('set', this.key, this.data);
+          }
+
+          return Promise.resolve();
         },
 
         getStoredValue(path) {
@@ -74,10 +82,8 @@
           if (online) {
             this.persistedData = data;
             this.linkPaths('data', 'persistedData');
-            this.linkPaths('persistedData', 'data');
           } else {
             this.unlinkPaths('data', 'persistedData');
-            this.unlinkPaths('persistedData', 'data');
             this.getStoredValue().then(value => {
               // We may have gone online since retrieving the persisted value..
               if (this.online) {

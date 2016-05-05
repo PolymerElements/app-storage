@@ -63,6 +63,10 @@
 
         reset: function() {},
 
+        destroy: function() {
+          return Promise.resolve();
+        },
+
         initializeStoredValue: function() {
           if (this.isNew) {
             return Promise.resolve();

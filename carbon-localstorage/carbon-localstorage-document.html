@@ -64,6 +64,22 @@
         return Promise.resolve();
       },
 
+      reset: function() {
+        this.key = null;
+        this.data = this.zeroValue;
+      },
+
+      destroy: function() {
+        try {
+          this.storage.removeItem(this.key);
+          this.reset();
+        } catch (e) {
+          return Promise.reject(e);
+        }
+
+        return Promise.resolve();
+      },
+
       getStoredValue: function(path) {
         var value;
 

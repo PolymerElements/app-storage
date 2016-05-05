@@ -32,7 +32,7 @@
             port.addEventListener('message', function onMessage(event) {
               if (event.data && event.data.id === id) {
                 port.removeEventListener('message', onMessage);
-                resolve(event.data.response);
+                resolve(event.data.result);
               }
             });
 
@@ -58,7 +58,7 @@
         }
 
         console.log('Carbon IndexedDB Client connecting..');
-        
+
         return this[connectsToWorker] = this.registerWorker().then(worker => {
           return new Promise(resolve => {
             worker.port.addEventListener('message', event => {
