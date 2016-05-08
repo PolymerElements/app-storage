@@ -2,10 +2,18 @@
   'use strict';
 
   const internalStoreName = 'internal';
+  const dbVersion = 2;
 
-  let clientPorts = Symbol('clientPorts');
-  let dbName = Symbol('dbName');
-  let storeName = Symbol('storeName');
+  const clientPorts = Symbol('clientPorts');
+  const dbName = Symbol('dbName');
+  const storeName = Symbol('storeName');
+
+  const migrations = [
+    // v1
+    context => context.database.createObjectStore(context.storeName),
+    // v2
+    context => context.database.createObjectStore(internalStoreName)
+  ];
 
   class CarbonIndexedDBMirrorWorker {
     constructor(_dbName='carbon-mirror', _storeName='mirrored_data') {
@@ -14,12 +22,20 @@
       // Maybe useful in case we want to notify clients of changes..
       this[clientPorts] = new Set();
       this.dbOpens = new Promise((resolve, reject) => {
-        let request = indexedDB.open(_dbName);
+        let request = indexedDB.open(_dbName, dbVersion);
 
-        request.onupgradeneeded = () => {
-          request.result.createObjectStore(_storeName);
-          request.result.createObjectStore(internalStoreName);
+        request.onupgradeneeded = event => {
+          let context = {
+            database: request.result,
+            storeName: _storeName,
+            dbName: _dbName
+          };
+
+          for (let i = event.oldVersion; i < event.newVersion; ++i) {
+            migrations[i] && migrations[i].call(this, context);
+          }
         };
+
         request.onsuccess = () => {
           resolve(request.result);
         };
@@ -32,9 +48,6 @@
           'unhandledrejection', error => console.error(error));
       self.addEventListener(
           'error', error => console.error(error));
-      self.addEventListener(
-          'message', message => this.handleGlobalMessage(message));
-
       console.log('CarbonIndexedDBMirrorWorker started...');
     }
 

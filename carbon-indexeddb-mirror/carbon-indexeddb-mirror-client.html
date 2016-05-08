@@ -1,3 +1,4 @@
+<link rel="import" href="communal-worker.html">
 <script>
   (function() {
     'use strict';
@@ -83,7 +84,7 @@
       }
 
       registerWorker() {
-        return Promise.resolve(new SharedWorker(this[workerUrl]));
+        return Promise.resolve(new Polymer.CommunalWorker(this[workerUrl]));
       }
     }
   })();
