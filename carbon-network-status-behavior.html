@@ -3,9 +3,8 @@
 <script>
 /**
 `Polymer.CarbonNetworkStatusBehavior` tracks the status of whether the browser
-is online or offline.
-
-@hero hero.svg
+is online or offline. True if the browser is online, and false if the browser is
+offline matching the HTML browser state spec.
 */
   (function() {
     'use strict';
@@ -24,7 +23,9 @@ is online or offline.
     Polymer.CarbonNetworkStatusBehavior = {
       properties: {
         /**
-         * True if the browser is online, and false if the browser is offline.
+         * True if the browser is online, and false if the browser is offline
+         * matching the HTML browser state spec.
+         *
          * @type {Boolean}
          */
         online: {
