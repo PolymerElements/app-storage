@@ -3,32 +3,32 @@
   (function() {
     'use strict';
 
-    let workerUrl = Symbol('workerUrl');
-    let connectsToWorker = Symbol('connectsToWorker');
-    let connected = Symbol('connected');
-    let messageId = Symbol('messageId');
-    let worker = null;
+    var workerUrl = Symbol('workerUrl');
+    var connectsToWorker = Symbol('connectsToWorker');
+    var connected = Symbol('connected');
+    var messageId = Symbol('messageId');
+    var worker = null;
 
-    Polymer.CarbonIndexedDBMirrorClient = class CarbonIndexedDBMirrorClient {
-      constructor(_workerUrl) {
-        this[workerUrl] = _workerUrl;
-        this[connected] = false;
-        this[messageId] = 0;
-        this[connectsToWorker] = null;
-      }
+    Polymer.CarbonIndexedDBMirrorClient = function(_workerUrl) {
+      this[workerUrl] = _workerUrl;
+      this[connected] = false;
+      this[messageId] = 0;
+      this[connectsToWorker] = null;
+    }
 
-      validateSession(session) {
+    Polymer.CarbonIndexedDBMirrorClient.prototype = {
+      validateSession: function(session) {
         return this.post({
           type: 'carbon-mirror-validate-session',
           session
         });
-      }
+      },
 
-      post(message) {
-        return this.connect().then(worker => {
-          return new Promise(resolve => {
-            let id = this[messageId]++;
-            let port = worker.port;
+      post: function(message) {
+        return this.connect().then(function(worker) {
+          return new Promise(function(resolve) {
+            var id = this[messageId]++;
+            var port = worker.port;
 
             port.addEventListener('message', function onMessage(event) {
               if (event.data && event.data.id === id) {
@@ -40,36 +40,37 @@
             message.id = id;
 
             port.postMessage(message);
-          });
-        });
-      }
+          }.bind(this));
+        }.bind(this));
+      },
 
-      transaction(method, key, value) {
+      transaction: function(method, key, value) {
         return this.post({
           type: 'carbon-mirror-transaction',
           method,
           key,
           value
         });
-      }
+      },
 
-      connect() {
+      connect: function() {
         if (this[connected] || this[connectsToWorker]) {
           return this[connectsToWorker];
         }
 
         console.log('Carbon IndexedDB Client connecting..');
 
-        return this[connectsToWorker] = this.registerWorker().then(worker => {
-          return new Promise(resolve => {
-            worker.port.addEventListener('message', event => {
+        return this[connectsToWorker] = this.registerWorker().then(
+            function(worker) {
+          return new Promise(function(resolve) {
+            worker.port.addEventListener('message', function(event) {
               if (event.data &&
                   event.data.type === 'carbon-mirror-connected') {
                 console.log('Carbon IndexedDB Client connected!');
                 this[connected] = true;
                 resolve(worker);
               }
-            });
+            }.bind(this));
 
             worker.addEventListener('error', error => {
               console.error(error.toString());
@@ -80,10 +81,10 @@
               type: 'carbon-mirror-connect'
             });
           });
-        });
-      }
+        }.bind(this));
+      },
 
-      registerWorker() {
+      registerWorker: function() {
         return Promise.resolve(new Polymer.CommunalWorker(this[workerUrl]));
       }
     }

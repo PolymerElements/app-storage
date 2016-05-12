@@ -2,55 +2,58 @@
   (function() {
     'use strict';
 
-    const webWorkers = new Map();
-    const hasSharedWorker = typeof SharedWorker !== 'undefined';
-    const hasWebWorker = typeof Worker !== 'undefined';
-    const baseUri =
+    var WEB_WORKERS = new Map();
+    var HAS_SHARED_WORKER = typeof SharedWorker !== 'undefined';
+    var HAS_WEB_WORKER = typeof Worker !== 'undefined';
+    var BASE_URI =
         (document.currentScript || document._currentScript)
         .ownerDocument.baseURI;
-    const workerScopeUrl =
-        Polymer.ResolveUrl.resolveUrl('communal-worker-scope.js', baseUri);
+    var WORKER_SCOPE_URL =
+        Polymer.ResolveUrl.resolveUrl('communal-worker-scope.js', BASE_URI);
 
-    Polymer.CommunalWorker = class CommunalWorker {
-      constructor(workerUrl) {
-        if (hasSharedWorker) {
-          return new SharedWorker(workerUrl);
-        } else if (hasWebWorker) {
-          if (!webWorkers.has(workerUrl)) {
-            webWorkers.set(
-                workerUrl, new Worker(`${workerScopeUrl}?${workerUrl}`));
-          }
-        } else {
-          console.error(`This browser does not support SharedWorker or
+    Polymer.CommunalWorker = function (workerUrl) {
+      if (HAS_SHARED_WORKER) {
+        return new SharedWorker(workerUrl);
+
+      } else if (HAS_WEB_WORKER) {
+        if (!WEB_WORKERS.has(workerUrl)) {
+          WEB_WORKERS.set(
+              workerUrl, new Worker(`${WORKER_SCOPE_URL}?${workerUrl}`));
+        }
+
+      } else {
+        console.error(`This browser does not support SharedWorker or
 WebWorker, but at least one of those two features is required for
 CommunalWorker to do its thing.`);
-        }
-
-        this.channel = new MessageChannel();
-        this.webWorker = webWorkers.get(workerUrl);
-        if (this.webWorker) {
-          this.webWorker.postMessage({
-            type: 'communal-worker-connect'
-          }, [this.channel.port2]);
-        }
       }
 
+      this.channel = new MessageChannel();
+      this.webWorker = WEB_WORKERS.get(workerUrl);
+
+      if (this.webWorker) {
+        this.webWorker.postMessage({
+          type: 'communal-worker-connect'
+        }, [this.channel.port2]);
+      }
+    }
+
+    Polymer.CommunalWorker.prototype = {
       get port() {
         return this.channel.port1;
-      }
+      },
 
-      addEventListener() {
+      addEventListener: function() {
         if (this.webWorker) {
           return this.webWorker.addEventListener.apply(this.webWorker, arguments);
         }
-      }
+      },
 
-      removeEventListener() {
+      removeEventListener = function() {
         if (this.webWorker) {
           return this.webWorker
               .removeEventListener.apply(this.webWorker, arguments);
         }
       }
-    }
+    };
   })();
 </script>
