@@ -1,5 +1,11 @@
 <link rel="import" href="../polymer/polymer.html">
+
 <script>
+/**
+`Polymer.CarbonNetworkStatusBehavior` tracks the status of whether the browser
+is online or offline. True if the browser is online, and false if the browser is
+offline matching the HTML browser state spec.
+*/
   (function() {
     'use strict';
 
@@ -16,6 +22,12 @@
 
     Polymer.CarbonNetworkStatusBehavior = {
       properties: {
+        /**
+         * True if the browser is online, and false if the browser is offline
+         * matching the HTML browser state spec.
+         *
+         * @type {Boolean}
+         */
         online: {
           type: Boolean,
           readOnly: true,
@@ -39,6 +51,9 @@
         networkStatusSubscribers.splice(index, 1);
       },
 
+      /**
+       * Updates the `online` property to reflect the browser connection status.
+       */
       refreshNetworkStatus: function() {
         this._setOnline(window.navigator.onLine);
       }
