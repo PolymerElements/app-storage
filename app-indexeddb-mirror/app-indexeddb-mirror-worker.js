@@ -15,8 +15,8 @@
     context => context.database.createObjectStore(internalStoreName)
   ];
 
-  class CarbonIndexedDBMirrorWorker {
-    constructor(_dbName='carbon-mirror', _storeName='mirrored_data') {
+  class AppIndexedDBMirrorWorker {
+    constructor(_dbName='app-mirror', _storeName='mirrored_data') {
       this[dbName] = _dbName;
       this[storeName] = _storeName;
       // Maybe useful in case we want to notify clients of changes..
@@ -48,7 +48,7 @@
           'unhandledrejection', error => console.error(error));
       self.addEventListener(
           'error', error => console.error(error));
-      console.log('CarbonIndexedDBMirrorWorker started...');
+      console.log('AppIndexedDBMirrorWorker started...');
     }
 
     operateOnStore(operation, storeName, mode) {
@@ -111,7 +111,7 @@
           'message', event => this.handleClientMessage(event, port));
       this[clientPorts].add(port);
       port.start();
-      port.postMessage({ type: 'carbon-mirror-connected' });
+      port.postMessage({ type: 'app-mirror-connected' });
     }
 
     handleClientMessage(event, port) {
@@ -122,34 +122,34 @@
       let id = event.data.id;
 
       switch(event.data.type) {
-        case 'carbon-mirror-validate-session':
+        case 'app-mirror-validate-session':
           this.validateSession(event.data.session).then(() => {
             port.postMessage({
-              type: 'carbon-mirror-session-validated',
+              type: 'app-mirror-session-validated',
               id
             });
           });
           break;
-        case 'carbon-mirror-transaction':
+        case 'app-mirror-transaction':
           this.transaction(event.data.method, event.data.key, event.data.value)
               .then(result => {
                 port.postMessage({
-                  type: 'carbon-mirror-transaction-result',
+                  type: 'app-mirror-transaction-result',
                   id,
                   result
                 });
               });
           break;
-        case 'carbon-mirror-disconnect':
+        case 'app-mirror-disconnect':
           this[clientPorts].remove(port);
           break;
       }
     }
   }
 
-  self.carbonIndexedDBMirrorWorker = new CarbonIndexedDBMirrorWorker();
+  self.appIndexedDBMirrorWorker = new AppIndexedDBMirrorWorker();
 
   self.addEventListener(
       'connect',
-      event => carbonIndexedDBMirrorWorker.registerClient(event.ports[0]));
+      event => appIndexedDBMirrorWorker.registerClient(event.ports[0]));
 })();

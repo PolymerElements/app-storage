@@ -11,39 +11,39 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>carbon-localstorage tests</title>
+  <title>app-localstorage tests</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 
   <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../../web-component-tester/browser.js"></script>
 
-  <link rel="import" href="../carbon-storage-compatibility-suite.html">
-  <link rel="import" href="../../carbon-localstorage/carbon-localstorage-document.html">
+  <link rel="import" href="../app-storage-compatibility-suite.html">
+  <link rel="import" href="../../app-localstorage/app-localstorage-document.html">
 </head>
 <body>
 
   <test-fixture id="BasicStorage">
     <template>
-      <carbon-localstorage-document key="carbon-localstorage-test" data="{}">
-      </carbon-localstorage-document>
+      <app-localstorage-document key="app-localstorage-test" data="{}">
+      </app-localstorage-document>
     </template>
   </test-fixture>
 
   <test-fixture id="SyncingStorage">
     <template>
-      <carbon-localstorage-document key="carbon-localstorage-test" data="{}">
-      </carbon-localstorage-document>
-      <carbon-localstorage-document key="carbon-localstorage-test" data="{}">
-      </carbon-localstorage-document>
+      <app-localstorage-document key="app-localstorage-test" data="{}">
+      </app-localstorage-document>
+      <app-localstorage-document key="app-localstorage-test" data="{}">
+      </app-localstorage-document>
     </template>
   </test-fixture>
 
   <script>
-    testCarbonStorageDocumentCompatibility({
-      tagName: 'carbon-localstorage-document',
+    testAppStorageDocumentCompatibility({
+      tagName: 'app-localstorage-document',
       fetchStoredValue: function(storagePath) {
         var parts = storagePath.split('.');
-        var value = JSON.parse(localStorage.getItem('carbon-localstorage-test'));
+        var value = JSON.parse(localStorage.getItem('app-localstorage-test'));
 
         parts.shift();
 

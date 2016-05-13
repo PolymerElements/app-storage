@@ -1,6 +1,6 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../promise-polyfill/promise-polyfill.html">
-<dom-module id="carbon-storage">
+<dom-module id="app-storage">
   <script>
     (function() {
       'use strict';
@@ -9,7 +9,7 @@
       var LENGTH_RX = /\.length$/;
       var NUMBER_RX = /\.?#?([0-9]+)$/;
 
-      Polymer.CarbonStorageBehavior = {
+      Polymer.AppStorageBehavior = {
         properties: {
           data: {
             type: Object,
