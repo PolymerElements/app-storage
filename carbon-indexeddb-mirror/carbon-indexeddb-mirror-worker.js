@@ -4,13 +4,13 @@
   var INTERNAL_STORE_NAME = 'internal';
   var DB_VERSION = 2;
 
-  var CLIENT_PORTS = Symbol('clientPorts');
-  var DB_NAME = Symbol('dbName');
-  var STORE_NAME = Symbol('storeName');
+  var CLIENT_PORTS = '__clientPorts';
+  var DB_NAME = '__dbName';
+  var STORE_NAME = '__storeName';
 
   var MIGRATIONS = [
     // v1
-    function(context) {context.database.createObjectStore(context.STORE_NAME)},
+    function(context) {context.database.createObjectStore(context.__storeName)},
     // v2
     function(context) {context.database.createObjectStore(INTERNAL_STORE_NAME)}
   ];
@@ -22,7 +22,7 @@
     this[DB_NAME] = _dbName;
     this[STORE_NAME] = _storeName;
     // Maybe useful in case we want to notify clients of changes..
-    this[CLIENT_PORTS] = new Set();
+    this[CLIENT_PORTS] = {};
     this.dbOpens = new Promise(function(resolve, reject) {
       var request = indexedDB.open(_dbName, DB_VERSION);
 
@@ -116,7 +116,7 @@
         this.handleClientMessage(event, port)
       }.bind(this));
 
-      this[CLIENT_PORTS].add(port);
+      this[CLIENT_PORTS][port] = true;
       port.start();
       port.postMessage({ type: 'carbon-mirror-connected' });
     },
@@ -148,7 +148,7 @@
               });
           break;
         case 'carbon-mirror-disconnect':
-          this[CLIENT_PORTS].remove(port);
+          delete this[CLIENT_PORTS][port];
           break;
       }
     }

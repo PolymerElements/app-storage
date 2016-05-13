@@ -3,17 +3,18 @@
   (function() {
     'use strict';
 
-    var workerUrl = Symbol('workerUrl');
-    var connectsToWorker = Symbol('connectsToWorker');
-    var connected = Symbol('connected');
-    var messageId = Symbol('messageId');
+    var WORKER_URL = '__workerUrl';
+    var CONNECTS_TO_WORKER = '__connectsToWorker';
+    var CONNECTED = '__connected';
+    var MESSAGE_ID = '__messageId';
     var worker = null;
 
-    Polymer.CarbonIndexedDBMirrorClient = function(_workerUrl) {
-      this[workerUrl] = _workerUrl;
-      this[connected] = false;
-      this[messageId] = 0;
-      this[connectsToWorker] = null;
+    Polymer.CarbonIndexedDBMirrorClient =
+        function CarbonIndexedDBMirrorClient(_workerUrl) {
+      this[WORKER_URL] = _workerUrl;
+      this[CONNECTED] = false;
+      this[MESSAGE_ID] = 0;
+      this[CONNECTS_TO_WORKER] = null;
     }
 
     Polymer.CarbonIndexedDBMirrorClient.prototype = {
@@ -27,7 +28,7 @@
       post: function(message) {
         return this.connect().then(function(worker) {
           return new Promise(function(resolve) {
-            var id = this[messageId]++;
+            var id = this[MESSAGE_ID]++;
             var port = worker.port;
 
             port.addEventListener('message', function onMessage(event) {
@@ -54,20 +55,20 @@
       },
 
       connect: function() {
-        if (this[connected] || this[connectsToWorker]) {
-          return this[connectsToWorker];
+        if (this[CONNECTED] || this[CONNECTS_TO_WORKER]) {
+          return this[CONNECTS_TO_WORKER];
         }
 
         console.log('Carbon IndexedDB Client connecting..');
 
-        return this[connectsToWorker] = this.registerWorker().then(
+        return this[CONNECTS_TO_WORKER] = this.registerWorker().then(
             function(worker) {
           return new Promise(function(resolve) {
             worker.port.addEventListener('message', function(event) {
               if (event.data &&
                   event.data.type === 'carbon-mirror-connected') {
                 console.log('Carbon IndexedDB Client connected!');
-                this[connected] = true;
+                this[CONNECTED] = true;
                 resolve(worker);
               }
             }.bind(this));
@@ -85,7 +86,7 @@
       },
 
       registerWorker: function() {
-        return Promise.resolve(new Polymer.CommunalWorker(this[workerUrl]));
+        return Promise.resolve(new Polymer.CommunalWorker(this[WORKER_URL]));
       }
     }
   })();
