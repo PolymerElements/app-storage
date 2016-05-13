@@ -22,7 +22,7 @@
     this[DB_NAME] = _dbName;
     this[STORE_NAME] = _storeName;
     // Maybe useful in case we want to notify clients of changes..
-    this[CLIENT_PORTS] = {};
+    this[CLIENT_PORTS] = new Array;
     this.dbOpens = new Promise(function(resolve, reject) {
       var request = indexedDB.open(_dbName, DB_VERSION);
 
@@ -116,7 +116,10 @@
         this.handleClientMessage(event, port)
       }.bind(this));
 
-      this[CLIENT_PORTS][port] = true;
+      if (!port in this[CLIENT_PORTS]) {
+        this[CLIENT_PORTS].push(port);
+      }
+
       port.start();
       port.postMessage({ type: 'carbon-mirror-connected' });
     },
@@ -148,7 +151,12 @@
               });
           break;
         case 'carbon-mirror-disconnect':
-          delete this[CLIENT_PORTS][port];
+          var index = this[CLIENT_PORTS].indexOf(port);
+
+          if (index != -1) {
+            this[CLIENT_PORTS].splice(index, 1);
+          }
+
           break;
       }
     }
