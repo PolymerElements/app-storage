@@ -39,16 +39,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </test-fixture>
 
   <script>
-    testCarbonStorageDocumentCompatibility({
-      tagName: 'carbon-localstorage-document',
-      fetchStoredValue: function(storagePath) {
-        var parts = storagePath.split('.');
-        var value = JSON.parse(localStorage.getItem('carbon-localstorage-test'));
+    HTMLImports.whenReady(function () {
+      testCarbonStorageDocumentCompatibility({
+        tagName: 'carbon-localstorage-document',
+        fetchStoredValue: function(storagePath) {
+          var parts = storagePath.split('.');
+          var value = JSON.parse(localStorage.getItem('carbon-localstorage-test'));
 
-        parts.shift();
+          parts.shift();
 
-        return Promise.resolve(Polymer.Base.get(parts.join('.'), value));
-      }
+          return Promise.resolve(Polymer.Base.get(parts.join('.'), value));
+        }
+      });
     });
   </script>
 </body>

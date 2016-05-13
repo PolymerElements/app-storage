@@ -1,129 +1,139 @@
 (function() {
   'use strict';
 
-  const internalStoreName = 'internal';
-  const dbVersion = 2;
+  var INTERNAL_STORE_NAME = 'internal';
+  var DB_VERSION = 2;
 
-  const clientPorts = Symbol('clientPorts');
-  const dbName = Symbol('dbName');
-  const storeName = Symbol('storeName');
+  var CLIENT_PORTS = '__clientPorts';
+  var DB_NAME = '__dbName';
+  var STORE_NAME = '__storeName';
 
-  const migrations = [
+  var MIGRATIONS = [
     // v1
-    context => context.database.createObjectStore(context.storeName),
+    function(context) {context.database.createObjectStore(context.__storeName)},
     // v2
-    context => context.database.createObjectStore(internalStoreName)
+    function(context) {context.database.createObjectStore(INTERNAL_STORE_NAME)}
   ];
 
-  class CarbonIndexedDBMirrorWorker {
-    constructor(_dbName='carbon-mirror', _storeName='mirrored_data') {
-      this[dbName] = _dbName;
-      this[storeName] = _storeName;
-      // Maybe useful in case we want to notify clients of changes..
-      this[clientPorts] = new Set();
-      this.dbOpens = new Promise((resolve, reject) => {
-        let request = indexedDB.open(_dbName, dbVersion);
+  function CarbonIndexedDBMirrorWorker(_dbName, _storeName) {
+    _dbName = _dbName || 'carbon-mirror';
+    _storeName = _storeName || 'mirrored_data';
 
-        request.onupgradeneeded = event => {
-          let context = {
-            database: request.result,
-            storeName: _storeName,
-            dbName: _dbName
-          };
+    this[DB_NAME] = _dbName;
+    this[STORE_NAME] = _storeName;
+    // Maybe useful in case we want to notify clients of changes..
+    this[CLIENT_PORTS] = new Array;
+    this.dbOpens = new Promise(function(resolve, reject) {
+      var request = indexedDB.open(_dbName, DB_VERSION);
 
-          for (let i = event.oldVersion; i < event.newVersion; ++i) {
-            migrations[i] && migrations[i].call(this, context);
-          }
+      request.onupgradeneeded = function(event) {
+        var context = {
+          database: request.result,
+          storeName: _storeName,
+          dbName: _dbName
         };
 
-        request.onsuccess = () => {
-          resolve(request.result);
-        };
-        request.onerror = () => {
-          reject(request.error);
-        };
-      });
+        for (var i = event.oldVersion; i < event.newVersion; ++i) {
+          MIGRATIONS[i] && MIGRATIONS[i].call(this, context);
+        }
+      };
 
-      self.addEventListener(
-          'unhandledrejection', error => console.error(error));
-      self.addEventListener(
-          'error', error => console.error(error));
-      console.log('CarbonIndexedDBMirrorWorker started...');
-    }
+      request.onsuccess = function() {
+        resolve(request.result);
+      };
+      request.onerror = function() {
+        reject(request.error);
+      };
+    });
 
-    operateOnStore(operation, storeName, mode) {
-      let operationArgs = Array.from(arguments).slice(3);
+    self.addEventListener(
+        'unhandledrejection', function(error){console.error(error)});
+    self.addEventListener(
+        'error', function(error) {console.error(error)});
+    console.log('CarbonIndexedDBMirrorWorker started...');
+  }
 
-      return this.dbOpens.then(db => {
-        return new Promise((resolve, reject) => {
-          let transaction = db.transaction(storeName, mode);
-          let store = transaction.objectStore(storeName);
-          let request = store[operation].apply(store, operationArgs);
+  CarbonIndexedDBMirrorWorker.prototype = {
+    operateOnStore: function(operation, storeName, mode) {
+      var operationArgs = Array.from(arguments).slice(3);
 
-          transaction.oncomplete = () => resolve(request.result);
-          transaction.onabort = () => reject(transaction.error);
+      return this.dbOpens.then(function(db) {
+        return new Promise(function(resolve, reject) {
+          var transaction = db.transaction(storeName, mode);
+          var store = transaction.objectStore(storeName);
+          var request = store[operation].apply(store, operationArgs);
+
+          transaction.oncomplete = function() {resolve(request.result)};
+          transaction.onabort = function() {reject(transaction.error)};
         });
       });
-    }
+    },
 
-    get(storeName, key) {
+    get: function(storeName, key) {
       return this.operateOnStore('get', storeName, 'readonly', key);
-    }
+    },
 
-    set(storeName, key, value) {
+    set: function(storeName, key, value) {
       return this.operateOnStore('put', storeName, 'readwrite', value, key);
-    }
+    },
 
-    clear(storeName) {
+    clear: function(storeName) {
       return this.operateOnStore('clear', storeName, 'readwrite');
-    }
+    },
 
-    transaction(method, key, value=null) {
+    transaction: function(method, key) {
+      value = value || null;
+
       switch(method) {
         case 'get':
-          return this.get(this[storeName], key);
+          return this.get(this[STORE_NAME], key);
         case 'set':
-          return this.set(this[storeName], key, value);
+          return this.set(this[STORE_NAME], key, value);
       }
-    }
+    },
 
-    validateSession(session) {
+    validateSession: function(session) {
       return Promise.all([
         this.dbOpens,
-        this.get(internalStoreName, 'session')
-      ]).then(results => {
-        let db = results[0];
-        let currentSession = results[1];
-        let operations = [];
+        this.get(INTERNAL_STORE_NAME, 'session')
+      ]).then(function(results) {
+        var db = results[0];
+        var currentSession = results[1];
+        var operations = [];
 
         if (session !== currentSession) {
           if (currentSession != null) {
-            operations.push(this.clear(this[storeName]));
+            operations.push(this.clear(this[STORE_NAME]));
           }
 
-          operations.push(this.set(internalStoreName, 'session', session));
+          operations.push(this.set(INTERNAL_STORE_NAME, 'session', session));
         }
-      });
-    }
+      }.bind(this));
+    },
 
-    registerClient(port) {
-      port.addEventListener(
-          'message', event => this.handleClientMessage(event, port));
-      this[clientPorts].add(port);
+    registerClient: function(port) {
+      port.addEventListener('message', function(event) {
+        this.handleClientMessage(event, port)
+      }.bind(this));
+
+      if (!port in this[CLIENT_PORTS]) {
+        this[CLIENT_PORTS].push(port);
+      }
+
       port.start();
       port.postMessage({ type: 'carbon-mirror-connected' });
-    }
+    },
 
-    handleClientMessage(event, port) {
+    handleClientMessage: function(event, port) {
       if (!event.data) {
         return;
       }
 
-      let id = event.data.id;
+      var id = event.data.id;
 
       switch(event.data.type) {
         case 'carbon-mirror-validate-session':
-          this.validateSession(event.data.session).then(() => {
+          this.validateSession(event.data.session).then(function() {
             port.postMessage({
               type: 'carbon-mirror-session-validated',
               id
@@ -132,7 +142,7 @@
           break;
         case 'carbon-mirror-transaction':
           this.transaction(event.data.method, event.data.key, event.data.value)
-              .then(result => {
+              .then(function(result) {
                 port.postMessage({
                   type: 'carbon-mirror-transaction-result',
                   id,
@@ -141,15 +151,20 @@
               });
           break;
         case 'carbon-mirror-disconnect':
-          this[clientPorts].remove(port);
+          var index = this[CLIENT_PORTS].indexOf(port);
+
+          if (index != -1) {
+            this[CLIENT_PORTS].splice(index, 1);
+          }
+
           break;
       }
     }
-  }
+  };
 
   self.carbonIndexedDBMirrorWorker = new CarbonIndexedDBMirrorWorker();
 
-  self.addEventListener(
-      'connect',
-      event => carbonIndexedDBMirrorWorker.registerClient(event.ports[0]));
+  self.addEventListener('connect', function(event) {
+    carbonIndexedDBMirrorWorker.registerClient(event.ports[0])
+  });
 })();
