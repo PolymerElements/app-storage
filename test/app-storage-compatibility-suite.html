@@ -11,7 +11,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 (function() {
   'use strict';
 
-  function testCarbonStorageDocumentCompatibility(extendedContext) {
+  function testAppStorageDocumentCompatibility(extendedContext) {
     var context = {
       tagName: 'unknown-element',
       awaitUpdate: function() {
@@ -35,7 +35,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     Object.assign(context, extendedContext);
 
-    suite('carbon storage compatibility: <' + context.tagName + '>', function() {
+    suite('app storage compatibility: <' + context.tagName + '>', function() {
       suite('basic storage scenarios', function() {
         var storage;
 
@@ -288,7 +288,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     });
   }
 
-  window.testCarbonStorageDocumentCompatibility =
-      testCarbonStorageDocumentCompatibility;
+  window.testAppStorageDocumentCompatibility =
+      testAppStorageDocumentCompatibility;
 })();
 </script>

@@ -1,14 +1,14 @@
-<link rel="import" href="../carbon-storage-behavior.html">
+<link rel="import" href="../app-storage-behavior.html">
 <link rel="import" href="../../polymer/polymer.html">
-<dom-module id="carbon-localstorage-document">
+<dom-module id="app-localstorage-document">
   <script>
     'use strict';
 
     Polymer({
-      is: 'carbon-localstorage-document',
+      is: 'app-localstorage-document',
 
       behaviors: [
-        Polymer.CarbonStorageBehavior
+        Polymer.AppStorageBehavior
       ],
 
       properties: {
@@ -36,16 +36,16 @@
         this.listen(window, 'storage', '__onStorage');
         this.listen(
             window.top,
-            'carbon-local-storage-changed',
-            '__onCarbonLocalStorageChanged');
+            'app-local-storage-changed',
+            '__onAppLocalStorageChanged');
       },
 
       detached: function() {
         this.unlisten(window, 'storage', '__onStorage');
         this.unlisten(
             window.top,
-            'carbon-local-storage-changed',
-            '__onCarbonLocalStorageChanged');
+            'app-local-storage-changed',
+            '__onAppLocalStorageChanged');
       },
 
       get isNew() {
@@ -110,7 +110,7 @@
             return Promise.reject(e);
           }
 
-          this.fire('carbon-local-storage-changed', this, {
+          this.fire('app-local-storage-changed', this, {
             node: window.top
           });
         }
@@ -137,7 +137,7 @@
         });
       },
 
-      __onCarbonLocalStorageChanged: function(event) {
+      __onAppLocalStorageChanged: function(event) {
         if (event.detail === this) {
           return;
         }

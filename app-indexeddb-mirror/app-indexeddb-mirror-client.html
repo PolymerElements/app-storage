@@ -9,7 +9,7 @@
     let messageId = Symbol('messageId');
     let worker = null;
 
-    Polymer.CarbonIndexedDBMirrorClient = class CarbonIndexedDBMirrorClient {
+    Polymer.AppIndexedDBMirrorClient = class AppIndexedDBMirrorClient {
       constructor(_workerUrl) {
         this[workerUrl] = _workerUrl;
         this[connected] = false;
@@ -19,7 +19,7 @@
 
       validateSession(session) {
         return this.post({
-          type: 'carbon-mirror-validate-session',
+          type: 'app-mirror-validate-session',
           session
         });
       }
@@ -46,7 +46,7 @@
 
       transaction(method, key, value) {
         return this.post({
-          type: 'carbon-mirror-transaction',
+          type: 'app-mirror-transaction',
           method,
           key,
           value
@@ -58,14 +58,14 @@
           return this[connectsToWorker];
         }
 
-        console.log('Carbon IndexedDB Client connecting..');
+        console.log('App IndexedDB Client connecting..');
 
         return this[connectsToWorker] = this.registerWorker().then(worker => {
           return new Promise(resolve => {
             worker.port.addEventListener('message', event => {
               if (event.data &&
-                  event.data.type === 'carbon-mirror-connected') {
-                console.log('Carbon IndexedDB Client connected!');
+                  event.data.type === 'app-mirror-connected') {
+                console.log('App IndexedDB Client connected!');
                 this[connected] = true;
                 resolve(worker);
               }
@@ -77,7 +77,7 @@
 
             worker.port.start();
             worker.port.postMessage({
-              type: 'carbon-mirror-connect'
+              type: 'app-mirror-connect'
             });
           });
         });
