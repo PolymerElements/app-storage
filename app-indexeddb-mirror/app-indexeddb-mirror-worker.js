@@ -21,7 +21,7 @@
   var MIGRATIONS = [
     // v1
     function(context) {
-      context.database.createObjectStore(context.__storeName);
+      context.database.createObjectStore(context.storeName);
     },
     // v2
     function(context) {
