@@ -9,9 +9,9 @@
         (document.currentScript || document._currentScript)
         .ownerDocument.baseURI;
     var WORKER_SCOPE_URL =
-        Polymer.ResolveUrl.resolveUrl('communal-worker-scope.js', BASE_URI);
+        Polymer.ResolveUrl.resolveUrl('common-worker-scope.js', BASE_URI);
 
-    Polymer.CommunalWorker = function CommunalWorker (workerUrl) {
+    Polymer.CommonWorker = function CommonWorker (workerUrl) {
       if (HAS_SHARED_WORKER) {
         return new SharedWorker(workerUrl);
 
@@ -24,7 +24,7 @@
       } else {
         console.error('This browser does not support SharedWorker or' +
 'WebWorker, but at least one of those two features is required for' +
-'CommunalWorker to do its thing.');
+'CommonWorker to do its thing.');
       }
 
       this.channel = new MessageChannel();
@@ -32,12 +32,12 @@
 
       if (this.webWorker) {
         this.webWorker.postMessage({
-          type: 'communal-worker-connect'
+          type: 'common-worker-connect'
         }, [this.channel.port2]);
       }
     }
 
-    Polymer.CommunalWorker.prototype = {
+    Polymer.CommonWorker.prototype = {
       get port() {
         return this.channel.port1;
       },

@@ -9,7 +9,7 @@
   self.addEventListener('message', function(event) {
     var data = event.data;
 
-    if (data && data.type === 'communal-worker-connect') {
+    if (data && data.type === 'common-worker-connect') {
       var connectEvent = new CustomEvent('connect');
       connectEvent.ports = event.ports;
       self.dispatchEvent(connectEvent);
