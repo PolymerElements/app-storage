@@ -8,7 +8,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 
-<link rel="import" href="communal-worker.html">
+<link rel="import" href="common-worker.html">
 <script>
   (function() {
     'use strict';
@@ -115,7 +115,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        *
        * @return {Promise} A promise that resolves when the worker has been
        * created and a handshake has been returned. The worker is an instance
-       * of `SharedWorker` (if available), or else `Polymer.CommunalWorker`.
+       * of `SharedWorker` (if available), or else `Polymer.CommonWorker`.
        */
       connect: function() {
         if (this[CONNECTED] || this[CONNECTS_TO_WORKER]) {
@@ -125,7 +125,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         console.log('App IndexedDB Client connecting..');
 
         return this[CONNECTS_TO_WORKER] = new Promise(function(resolve) {
-          var worker = new Polymer.CommunalWorker(this[WORKER_URL]);
+          var worker = new Polymer.CommonWorker(this[WORKER_URL]);
 
           worker.port.addEventListener('message', function(event) {
             if (event.data &&
