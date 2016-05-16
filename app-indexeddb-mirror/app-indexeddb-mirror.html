@@ -156,8 +156,7 @@ be available through this element.
            * session changes (e.g., logout).
            */
           session: {
-            type: String,
-            value: null
+            type: String
           },
 
           /**
@@ -200,7 +199,7 @@ be available through this element.
         },
 
         observers: [
-          '__updatePersistedData(client, session, online, data)'
+          '__updatePersistedData(client, key, session, online, data)'
         ],
 
         /** @override */
@@ -237,7 +236,7 @@ be available through this element.
           return new Polymer.AppIndexedDBMirrorClient(workerUrl);
         },
 
-        __updatePersistedData: function(client, session, online, data) {
+        __updatePersistedData: function(client, key, session, online, data) {
           this.client.validateSession(session);
 
           if (online) {
