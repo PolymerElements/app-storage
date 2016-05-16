@@ -17,6 +17,7 @@
   var CLIENT_PORTS = '__clientPorts';
   var DB_NAME = '__dbName';
   var STORE_NAME = '__storeName';
+  var DB_OPENS = '__dbOpens';
 
   var MIGRATIONS = [
     // v1
@@ -46,37 +47,63 @@
     this[STORE_NAME] = _storeName;
     // Maybe useful in case we want to notify clients of changes..
     this[CLIENT_PORTS] = new Array;
-    this.dbOpens = new Promise(function(resolve, reject) {
-      var request = indexedDB.open(_dbName, DB_VERSION);
+    this[DB_OPENS] = null;
 
-      request.onupgradeneeded = function(event) {
-        var context = {
-          database: request.result,
-          storeName: _storeName,
-          dbName: _dbName
-        };
-
-        for (var i = event.oldVersion; i < event.newVersion; ++i) {
-          MIGRATIONS[i] && MIGRATIONS[i].call(this, context);
-        }
-      };
-
-      request.onsuccess = function() {
-        resolve(request.result);
-      };
-      request.onerror = function() {
-        reject(request.error);
-      };
-    });
+    this.openDb();
 
     self.addEventListener(
         'unhandledrejection', function(error){ console.error(error); });
     self.addEventListener(
         'error', function(error) { console.error(error); });
+
+    this.supportsIndexedDB = self.indexedDB != null;
     console.log('AppIndexedDBMirrorWorker started...');
   };
 
   AppIndexedDBMirrorWorker.prototype = {
+
+    openDb: function() {
+      this.__dbOpens = this.__dbOpens || new Promise(function(resolve, reject) {
+        console.log('Opening database..');
+
+        var request = indexedDB.open(this[DB_NAME], DB_VERSION);
+
+        request.onupgradeneeded = function(event) {
+          console.log('Upgrade needed:', event.oldVersion, '=>', event.newVersion);
+          var context = {
+            database: request.result,
+            storeName: this[STORE_NAME],
+            dbName: this[DB_NAME]
+          };
+
+          for (var i = event.oldVersion; i < event.newVersion; ++i) {
+            MIGRATIONS[i] && MIGRATIONS[i].call(this, context);
+          }
+        }.bind(this);
+
+        request.onsuccess = function() {
+          console.log('Database opened.');
+          resolve(request.result);
+        };
+        request.onerror = function() {
+          reject(request.error);
+        };
+      }.bind(this));
+
+      return this.__dbOpens;
+    },
+
+    closeDb: function() {
+      if (this.__dbOpens == null) {
+        return Promise.resolve();
+      }
+
+      return this.openDb().then(function(db) {
+        this.__dbOpens = null;
+        console.log('Closing database..');
+        db.close();
+      }.bind(this));
+    },
 
     /**
      * Perform a transaction on an IndexedDB object store.
@@ -94,11 +121,18 @@
     operateOnStore: function(operation, storeName, mode) {
       var operationArgs = Array.from(arguments).slice(3);
 
-      return this.dbOpens.then(function(db) {
+      return this.openDb().then(function(db) {
+
+        console.log('Store operation:', operation, storeName, mode, operationArgs);
+
         return new Promise(function(resolve, reject) {
-          var transaction = db.transaction(storeName, mode);
-          var store = transaction.objectStore(storeName);
-          var request = store[operation].apply(store, operationArgs);
+          try {
+            var transaction = db.transaction(storeName, mode);
+            var store = transaction.objectStore(storeName);
+            var request = store[operation].apply(store, operationArgs);
+          } catch (e) {
+            return reject(e);
+          }
 
           transaction.oncomplete = function() { resolve(request.result); };
           transaction.onabort = function() { reject(transaction.error); };
@@ -178,7 +212,7 @@
      */
     validateSession: function(session) {
       return Promise.all([
-        this.dbOpens,
+        this.openDb(),
         this.get(INTERNAL_STORE_NAME, 'session')
       ]).then(function(results) {
         var db = results[0];
@@ -212,7 +246,12 @@
       }
 
       port.start();
-      port.postMessage({ type: 'app-mirror-connected' });
+      port.postMessage({
+        type: 'app-mirror-connected',
+        supportsIndexedDB: this.supportsIndexedDB
+      });
+
+      console.log('New client connected.');
     },
 
     /**
@@ -232,11 +271,18 @@
       var id = event.data.id;
 
       switch(event.data.type) {
+        case 'app-mirror-close-db':
+          this.closeDb().then(function() {
+            port.postMessage({
+              type: 'app-mirror-db-closed',
+              id: id
+            });
+          });
         case 'app-mirror-validate-session':
           this.validateSession(event.data.session).then(function() {
             port.postMessage({
               type: 'app-mirror-session-validated',
-              id
+              id: id
             });
           });
           break;
@@ -245,8 +291,8 @@
               .then(function(result) {
                 port.postMessage({
                   type: 'app-mirror-transaction-result',
-                  id,
-                  result
+                  id: id,
+                  result: result
                 });
               });
           break;

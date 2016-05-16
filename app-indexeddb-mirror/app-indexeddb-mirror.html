@@ -88,13 +88,13 @@ access to Firebase data is trivially easy to implement.
 features user authentication, it is usually desireable to ensure that this data
 does not leak across the sessions of different users on the same device.
 
-In support of this, `app-indexeddb-mirror` can be configured with a unique
+In support of this, each `app-indexeddb-mirror` is configured with a unique
 session key. When the session key changes, it will automatically wipe the local
 IndexedDB copy of any data that has been persisted.
 
 ```html
 <app-indexeddb-mirror
-    session="[[someUniqueSessionKey]]"
+    session="a-unique-session-key-413"
     key="cats"
     data="{{liveData}}"
     persisted-data="{{persistedData}}">
@@ -182,7 +182,8 @@ be available through this element.
            */
           client: {
             type: Polymer.AppIndexedDBMirrorClient,
-            computed: '__computeClient(workerUrl)'
+            computed: '__computeClient(workerUrl)',
+            observer: '__clientChanged'
           },
 
           /**
@@ -199,14 +200,14 @@ be available through this element.
         },
 
         observers: [
-          '__updatePersistedData(client, key, session, online, data)'
+          '__updatePersistedData(client, key, session, online)',
+          '__updatePersistedData(data.*)',
         ],
 
         /** @override */
         get isNew() {
           return false;
         },
-
 
         /** @override */
         destroy: function() {
@@ -232,25 +233,36 @@ be available through this element.
           return Promise.resolve();
         },
 
+        __clientChanged: function(client) {
+          this._enqueueTransaction(function() {
+            return client.connect();
+          });
+        },
+
         __computeClient: function(workerUrl) {
           return new Polymer.AppIndexedDBMirrorClient(workerUrl);
         },
 
-        __updatePersistedData: function(client, key, session, online, data) {
-          this.client.validateSession(session);
+        __updatePersistedData: function() {
+          this._log('Updating persisted data..');
+          this._enqueueTransaction(function() {
+            return this.client.validateSession(this.session);
+          });
 
-          if (online) {
-            this.persistedData = data;
+          if (this.online) {
+            this.persistedData = this.data;
             this.linkPaths('data', 'persistedData');
           } else {
             this.unlinkPaths('data', 'persistedData');
-            this.getStoredValue().then(function(value) {
-              // We may have gone online since retrieving the persisted value..
-              if (this.online) {
-                return;
-              }
-              this.persistedData = value;
-            }.bind(this));
+            this._enqueueTransaction(function() {
+              return this.getStoredValue().then(function(value) {
+                // We may have gone online since retrieving the persisted value..
+                if (this.online || !this.client.supportsMirroring) {
+                  return;
+                }
+                this.persistedData = value;
+              }.bind(this));
+            });
           }
         }
       });

@@ -239,11 +239,11 @@
 
           var initializingStoredValue =
               this.__initializingStoredValue =
-              this.initializeStoredValue().then(() => {
+              this.initializeStoredValue().then(function() {
                 this.__initialized = true;
                 this.__initializingStoredValue = null;
                 this._groupEnd('Initializing stored value.');
-              });
+              }.bind(this));
 
           return this._enqueueTransaction(function() {
             return initializingStoredValue;

@@ -17,6 +17,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     var CONNECTS_TO_WORKER = '__connectsToWorker';
     var CONNECTED = '__connected';
     var MESSAGE_ID = '__messageId';
+    var SUPPORTS_MIRRORING = '__mirroringSupported';
     var worker = null;
 
     /**
@@ -33,9 +34,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       this[CONNECTED] = false;
       this[MESSAGE_ID] = 0;
       this[CONNECTS_TO_WORKER] = null;
+      this[SUPPORTS_MIRRORING] = null;
+
+      this.connect();
     };
 
     Polymer.AppIndexedDBMirrorClient.prototype = {
+
+      get supportsMirroring() {
+        return this[SUPPORTS_MIRRORING];
+      },
 
       /**
        * Requests that the worker validate the current session against the
@@ -68,6 +76,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        */
       post: function(message) {
         return this.connect().then(function(worker) {
+          if (!this[SUPPORTS_MIRRORING]) {
+            return Promise.resolve({});
+          }
+
           return new Promise(function(resolve) {
             var id = this[MESSAGE_ID]++;
             var port = worker.port;
@@ -109,6 +121,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
       },
 
+      closeDb: function() {
+        return this.post({
+          type: 'app-mirror-close-db'
+        });
+      },
+
       /**
        * Instantiates (if necessary) and connects to the backing worker
        * instance.
@@ -132,12 +150,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 event.data.type === 'app-mirror-connected') {
               console.log('App IndexedDB Client connected!');
               this[CONNECTED] = true;
+              this[SUPPORTS_MIRRORING] = event.data.supportsIndexedDB;
               resolve(worker);
             }
           }.bind(this));
 
-          worker.addEventListener('error', error => {
-            console.error(error.toString());
+          worker.addEventListener('error', function(error) {
+            console.error(error.message || error);
           });
 
           worker.port.start();
