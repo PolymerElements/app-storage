@@ -39,17 +39,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </test-fixture>
 
   <script>
-    testAppStorageDocumentCompatibility({
-      tagName: 'app-localstorage-document',
-      fetchStoredValue: function(storagePath) {
-        var parts = storagePath.split('.');
-        var value = JSON.parse(localStorage.getItem('app-localstorage-test'));
+    document.addEventListener('WebComponentsReady', function() {
+      testAppStorageDocumentCompatibility({
+        tagName: 'app-localstorage-document',
+        fetchStoredValue: function(storagePath) {
+          var parts = storagePath.split('.');
+          var value = JSON.parse(localStorage.getItem('app-localstorage-test'));
 
-        parts.shift();
+          parts.shift();
 
-        return Promise.resolve(Polymer.Base.get(parts.join('.'), value));
-      }
-    });
+          return Promise.resolve(Polymer.Base.get(parts.join('.'), value));
+        }
+      });      
+    })
   </script>
 </body>
 </html>
