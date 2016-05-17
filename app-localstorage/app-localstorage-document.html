@@ -4,6 +4,30 @@
   <script>
     'use strict';
 
+    /**
+     * app-localstorage-document synchronizes storage between an in-memory
+     * value and a location in the browser's localStorage system.
+     *
+     * localStorage is a simple and widely supported storage API that provides both
+     * permanent and session-based storage options. Using app-localstorage-document
+     * you can easily integrate localStorage into your app via normal Polymer
+     * databinding.
+     *
+     * app-localstorage-document is the reference implementation of an element
+     * that uses `AppStorageBehavior`. Reading its code is a good way to get
+     * started writing your own storage element.
+     *
+     * Example use:
+     *
+     *     <paper-input value="{{search}}"></paper-input>
+     *     <app-localstorage-document key="search" data="{{search}}">
+     *     </app-localstorage-document>
+     *
+     * app-localstorage-document automatically synchronizes changes to the
+     * same key across multiple tabs.
+     *
+     * Only supports storing JSON-serializable values.
+     */
     Polymer({
       is: 'app-localstorage-document',
 
@@ -12,16 +36,28 @@
       ],
 
       properties: {
+        /**
+         * Defines the logical location to store the data.
+         */
         key: {
           type: String,
           notify: true
         },
 
+        /**
+         * If true, the data will automatically be cleared from storage when
+         * the page session ends (i.e. when the user has navigated away from
+         * the page).
+         */
         sessionOnly: {
           type: Boolean,
           value: false
         },
 
+        /**
+         * Either `window.localStorage` or `window.sessionStorage`, depending on
+         * `this.sessionOnly`.
+         */
         storage: {
           type: Object,
           computed: '__computeStorage(sessionOnly)'
@@ -48,10 +84,19 @@
             '__onAppLocalStorageChanged');
       },
 
+      /**
+       * @override
+       */
       get isNew() {
         return !this.key;
       },
 
+      /**
+       * Stores a value at the given key, and if successful, updates this.key.
+       *
+       * @override
+       * @param {string} key The new key to use.
+       */
       save: function(key) {
         try {
           this.__setStorageValue(key, this.data);
@@ -64,11 +109,17 @@
         return Promise.resolve();
       },
 
+      /**
+       * @override
+       */
       reset: function() {
         this.key = null;
         this.data = this.zeroValue;
       },
 
+      /**
+       * @override
+       */
       destroy: function() {
         try {
           this.storage.removeItem(this.key);
@@ -80,6 +131,9 @@
         return Promise.resolve();
       },
 
+      /**
+       * @override
+       */
       getStoredValue: function(path) {
         var value;
 
@@ -102,6 +156,9 @@
         return Promise.resolve(value);
       },
 
+      /**
+       * @override
+       */
       setStoredValue: function(path, value) {
         if (this.key != null) {
           try {
