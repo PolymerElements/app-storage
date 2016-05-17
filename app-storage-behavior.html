@@ -69,6 +69,8 @@
         /**
          * Override this getter to return true if the value has never been
          * persisted to storage.
+         *
+         * @type {boolean}
          */
         get isNew() {
           return true;
@@ -81,6 +83,10 @@
          * This field is updated as new transactions are enqueued, so it will
          * only wait for transactions which were enqueued when the field
          * was accessed.
+         *
+         * This promise never rejects.
+         *
+         * @type {Promise}
          */
         get transactionsComplete() {
           return this.__transactionQueueAdvances;
@@ -89,6 +95,8 @@
         /**
          * Override this getter to define the default value to use when
          * there's no data stored.
+         *
+         * @type {*}
          */
         get zeroValue() {
           return undefined;
@@ -100,7 +108,7 @@
          * If the data value represented by this storage instance is new, this
          * method generates an attempt to write the value to storage.
          *
-         * Returns a Promise that finishes only once the write has.
+         * @return {Promise} a Promise that settles only once the write has.
          */
         save: function() {
           return Promise.resolve();
@@ -118,7 +126,8 @@
         /**
          * Remove the data from storage.
          *
-         * Returns a promise that finishes once the destruction is complete.
+         * @return {Promise} A promise that settles once the destruction is
+         *   complete.
          */
         destroy: function() {
           this.data = this.zeroValue;
@@ -132,6 +141,9 @@
          *
          * If an implementation intends to call this method, it should instead
          * call _initializeStoredValue, which provides reentrancy protection.
+         *
+         * @return {Promise} A promise that settles once this process is
+         *     complete.
          */
         initializeStoredValue: function() {
           if (this.isNew) {
@@ -157,12 +169,12 @@
          * Override this method to implement reading a value from storage.
          *
          * @param {string} storagePath The path (through storage) of the value to
-         * create, relative to the root of storage associated with this instance.
+         *   create, relative to the root of storage associated with this instance.
          * @return {Promise} A promise that resolves with the canonical value stored
-         * at the provided path when the transaction has completed. _If there is no
-         * such value at she provided path through storage, then the promise will
-         * resolve to `undefined`._ The promise will be rejected if the transaction
-         * fails for any reason.
+         *   at the provided path when the transaction has completed. _If there is no
+         *   such value at she provided path through storage, then the promise will
+         *   resolve to `undefined`._ The promise will be rejected if the transaction
+         *   fails for any reason.
          */
         getStoredValue: function(storagePath) {
           return Promise.resolve();
@@ -173,12 +185,12 @@
          * stored values.
          *
          * @param {string} storagePath The path of the value to update, relative
-         * to the root storage path configured for this instance.
+         *   to the root storage path configured for this instance.
          * @param {*} value The updated in-memory value to apply to the stored value
-         * at the provided path.
+         *   at the provided path.
          * @return {Promise} A promise that resolves with the canonical value stored
-         * at the provided path when the transaction has completed. The promise will
-         * be rejected if the transaction fails for any reason.
+         *   at the provided path when the transaction has completed. The promise
+         *   will be rejected if the transaction fails for any reason.
          */
         setStoredValue: function(storagePath, value) {
           return Promise.resolve(value);
@@ -192,8 +204,8 @@
          *
          * @param {string} path An in-memory path through a storage object.
          * @return {string} The provided path mapped to the equivalent location in
-         * storage. This mapped version of the path is suitable for use with the
-         * CRUD operations on both memory and storage.
+         *   storage. This mapped version of the path is suitable for use with the
+         *   CRUD operations on both memory and storage.
          */
         memoryPathToStoragePath: function(path) {
           return path;
@@ -206,8 +218,8 @@
          * The inverse of memoryPathToStoragePath.
          *
          * @param {string} path The storage path through a storage object.
-         * @param {string} The provided path through storage mapped to the
-         * equivalent Polymer path through the in-memory representation of storage.
+         * @return {string} The provided path through storage mapped to the
+         *   equivalent Polymer path through the in-memory representation of storage.
          */
         storagePathToMemoryPath: function(path) {
           return path;
@@ -220,8 +232,8 @@
          * for preventing redundant (or cyclical) application of transformations.
          *
          * @param {Function} operation A function that will perform the desired
-         * transformation. It will be called synchronously, when it is safe to
-         * apply the transformation.
+         *   transformation. It will be called synchronously, when it is safe to
+         *   apply the transformation.
          */
         syncToMemory: function(operation) {
           if (this.__syncingToMemory) {
@@ -251,14 +263,50 @@
           }
         },
 
+        /**
+         * Like `getStoredValue` but called with a Polymer path rather than
+         * a storage path.
+         *
+         * @param {string} path The Polymer path to get.
+         * @return {Promise} A Promise of the value stored at that path.
+         */
         _getStoredValue: function(path) {
           return this.getStoredValue(this.memoryPathToStoragePath(path));
         },
 
+        /**
+         * Like `setStoredValue` but called with a Polymer path rather than
+         * a storage path.
+         *
+         * @param {string} path The Polymer path to update.
+         * @param {*} value The updated in-memory value to apply to the stored value
+         *   at the provided path.
+         * @return {Promise} A promise that resolves with the canonical value stored
+         *   at the provided path when the transaction has completed. The promise
+         *   will be rejected if the transaction fails for any reason.
+         */
         _setStoredValue: function(path, value) {
           return this.setStoredValue(this.memoryPathToStoragePath(path), value);
         },
 
+        /**
+         * Enqueues the given function in the transaction queue.
+         *
+         * The transaction queue allows for optional parallelism/sequentiality
+         * via the `sequentialTransactions` boolean property, as well as giving
+         * the user a convenient way to wait for all pending transactions to
+         * finish.
+         *
+         * The given function may be called immediately or after an arbitrary
+         * delay. Its `this` context will be bound to the element.
+         *
+         * If the transaction performs any asynchronous operations it must
+         * return a promise.
+         *
+         * @param {Function} transaction A function implementing the transaction.
+         * @return {Promise} A promise that resolves once the transaction has
+         *   finished. This promise will never reject.
+         */
         _enqueueTransaction: function(transaction) {
           if (this.sequentialTransactions) {
             transaction = transaction.bind(this);
@@ -276,30 +324,49 @@
               }.bind(this));
         },
 
+        /**
+         * A wrapper around `console.log`.
+         */
         _log: function() {
           if (this.log) {
             console.log.apply(console, arguments);
           }
         },
 
+        /**
+         * A wrapper around `console.error`.
+         */
         _error: function() {
           if (this.log) {
             console.error.apply(console, arguments);
           }
         },
 
+        /**
+         * A wrapper around `console.group`.
+         */
         _group: function() {
           if (this.log) {
             console.group.apply(console, arguments);
           }
         },
 
+        /**
+         * A wrapper around `console.groupEnd`.
+         */
         _groupEnd: function() {
           if (this.log) {
             console.groupEnd.apply(console, arguments);
           }
         },
 
+        /**
+         * A reentrancy-save wrapper around `this.initializeStoredValue`.
+         * Prefer calling this method over that one.
+         *
+         * @return {Promise} The result of calling `initializeStoredValue`,
+         *   or `undefined` if called while initializing.
+         */
         _initializeStoredValue: function() {
           if (this.__initializingStoredValue) {
             return;
