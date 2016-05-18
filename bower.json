@@ -15,7 +15,7 @@
     "firebase": "http://www.gstatic.com/firebasejs/staging/3.0.0-eap.5/firebase.js"
   },
   "devDependencies": {
-    "web-component-tester": "^4.2.2",
+    "web-component-tester": "^4.0.0",
     "paper-input": "polymerelements/paper-input#^1.0.0",
     "moment": "^2.12.0",
     "paper-styles": "polymerelements/paper-styles#^1.0.0",
