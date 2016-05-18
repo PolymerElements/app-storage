@@ -45,7 +45,7 @@ offline matching the HTML browser state spec.
 
       detached: function() {
         var index = networkStatusSubscribers.indexOf(this);
-        if (index < -1) {
+        if (index < 0) {
           return;
         }
         networkStatusSubscribers.splice(index, 1);
