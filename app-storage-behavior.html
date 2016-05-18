@@ -12,7 +12,7 @@
       /**
        * AppStorageBehavior is an abstract behavior that makes it easy to
        * synchronize in-memory data and a persistant storage system, such as
-       * the browser's IndexedDb, or a remote database like Firebase.
+       * the browser's IndexedDB, or a remote database like Firebase.
        */
       Polymer.AppStorageBehavior = {
         properties: {
@@ -108,6 +108,7 @@
          * If the data value represented by this storage instance is new, this
          * method generates an attempt to write the value to storage.
          *
+         * @abstract
          * @return {Promise} a Promise that settles only once the write has.
          */
         save: function() {
@@ -168,6 +169,7 @@
         /**
          * Override this method to implement reading a value from storage.
          *
+         * @abstract
          * @param {string} storagePath The path (through storage) of the value to
          *   create, relative to the root of storage associated with this instance.
          * @return {Promise} A promise that resolves with the canonical value stored
@@ -184,6 +186,7 @@
          * Override this method to implement creating and updating
          * stored values.
          *
+         * @abstract
          * @param {string} storagePath The path of the value to update, relative
          *   to the root storage path configured for this instance.
          * @param {*} value The updated in-memory value to apply to the stored value
