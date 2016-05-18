@@ -31,5 +31,6 @@
     "iron-icons": "polymerelements/iron-icons#^1.0.0",
     "paper-button": "polymerelements/paper-button#^1.0.0",
     "platinum-sw": "polymerelements/platinum-sw#^1.3.0"
-  }
+  },
+  "ignore": []
 }
