@@ -4,19 +4,23 @@
     "The Polymer Authors"
   ],
   "version": "0.9.1",
-  "description": "",
-  "main": "",
+  "description": "Web Components for managing user data in web apps",
+  "main": [
+    "app-storage-behavior.html",
+    "app-network-status-behavior.html",
+    "app-localstorage/app-localstorage-document.html",
+    "app-indexeddb-mirror/app-indexeddb-mirror.html"
+  ],
   "moduleType": [],
   "license": "MIT",
   "homepage": "",
   "private": true,
   "dependencies": {
     "promise-polyfill": "polymerlabs/promise-polyfill#^1.0.0",
-    "polymer": "polymer/polymer#^1.2.0",
-    "firebase": "http://www.gstatic.com/firebasejs/staging/3.0.0-eap.5/firebase.js"
+    "polymer": "polymer/polymer#^1.2.0"
   },
   "devDependencies": {
-    "web-component-tester": "^4.0.0",
+    "web-component-tester": "^4.2.2",
     "paper-input": "polymerelements/paper-input#^1.0.0",
     "moment": "^2.12.0",
     "paper-styles": "polymerelements/paper-styles#^1.0.0",
@@ -26,8 +30,6 @@
     "paper-fab": "polymerelements/paper-fab#^1.0.0",
     "iron-icons": "polymerelements/iron-icons#^1.0.0",
     "paper-button": "polymerelements/paper-button#^1.0.0",
-    "platinum-sw": "polymerelements/platinum-sw#^1.3.0",
-    "iron-component-page": "polymerelements/iron-component-page#^1.0.0"
-  },
-  "ignore": []
+    "platinum-sw": "polymerelements/platinum-sw#^1.3.0"
+  }
 }
