@@ -8,13 +8,7 @@ Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
 <link rel="import" href="../polymer/polymer.html">
-
 <script>
-/**
-`Polymer.appNetworkStatusBehavior` tracks the status of whether the browser
-is online or offline. True if the browser is online, and false if the browser is
-offline matching the HTML browser state spec.
-*/
   (function() {
     'use strict';
 
@@ -29,6 +23,13 @@ offline matching the HTML browser state spec.
     window.addEventListener('online', notifySubscribers);
     window.addEventListener('offline', notifySubscribers);
 
+    /**
+     * `Polymer.appNetworkStatusBehavior` tracks the status of whether the browser
+     * is online or offline. True if the browser is online, and false if the browser is
+     * offline matching the HTML browser state spec.
+     *
+     * @polymerBehavior
+     */
     Polymer.AppNetworkStatusBehavior = {
       properties: {
         /**
