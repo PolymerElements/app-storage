@@ -13,6 +13,19 @@ thing! https://github.com/PolymerLabs/tedium/issues
 -->
 
 
+##Polymer.AppStorageBehavior
+
+AppStorageBehavior is an abstract behavior that makes it easy to
+synchronize in-memory data and a persistant storage system, such as
+the browser's IndexedDB, or a remote database like Firebase.
+
+For examples of how to use this behavior to write your own app storage
+elements see `<app-localstorage-document>` here, or check out
+[polymerfire](https://github.com/Firebase/polymerfire) and
+[app-pouchdb](https://github.com/PolymerElements/app-pouchdb).
+
+
+
 ##&lt;app-indexeddb-mirror&gt;
 
 `app-indexeddb-mirror` is a purpose-built element to easily add read-only
@@ -160,18 +173,5 @@ Only supports storing JSON-serializable values.
 `Polymer.appNetworkStatusBehavior` tracks the status of whether the browser
 is online or offline. True if the browser is online, and false if the browser is
 offline matching the HTML browser state spec.
-
-
-
-##Polymer.AppStorageBehavior
-
-AppStorageBehavior is an abstract behavior that makes it easy to
-synchronize in-memory data and a persistant storage system, such as
-the browser's IndexedDB, or a remote database like Firebase.
-
-For examples of how to use this behavior to write your own app storage
-elements see `<app-localstorage-document>` here, or check out
-[polymerfire](https://github.com/Firebase/polymerfire) and
-[app-pouchdb](https://github.com/PolymerElements/app-pouchdb).
 
 
