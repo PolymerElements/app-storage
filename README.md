@@ -169,4 +169,9 @@ AppStorageBehavior is an abstract behavior that makes it easy to
 synchronize in-memory data and a persistant storage system, such as
 the browser's IndexedDB, or a remote database like Firebase.
 
+For examples of how to use this behavior to write your own app storage
+elements see `<app-localstorage-document>` here, or check out
+[polymerfire](https://github.com/Firebase/polymerfire) and
+[app-pouchdb](https://github.com/PolymerElements/app-pouchdb).
+
 
