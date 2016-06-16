@@ -204,7 +204,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       __onAppLocalStorageChanged: function(event) {
-        if (event.detail.key !== this.key ||
+        if (event.detail === this ||
+            event.detail.key !== this.key ||
             event.detail.storage !== this.storage) {
           return;
         }
