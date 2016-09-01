@@ -16,8 +16,7 @@
   "homepage": "",
   "private": true,
   "dependencies": {
-    "promise-polyfill": "polymerlabs/promise-polyfill#^1.0.0",
-    "polymer": "polymer/polymer#^1.2.0"
+    "polymer": "git@github.com:PolymerLabs/alacarte.git#master"
   },
   "devDependencies": {
     "web-component-tester": "^4.0.0",
@@ -30,7 +29,14 @@
     "paper-fab": "polymerelements/paper-fab#^1.0.0",
     "iron-icons": "polymerelements/iron-icons#^1.0.0",
     "paper-button": "polymerelements/paper-button#^1.0.0",
-    "platinum-sw": "polymerelements/platinum-sw#^1.3.0"
+    "platinum-sw": "polymerelements/platinum-sw#^1.3.0",
+    "promise-polyfill": "polymerlabs/promise-polyfill#^1.0.0",
+    "test-fixture": "PolymerElements/test-fixture#custom-elements-v1"
   },
-  "ignore": []
+  "ignore": [],
+  "resolutions": {
+    "polymer": "master",
+    "webcomponentsjs": "v1-polymer-edits",
+    "test-fixture": "custom-elements-v1"
+  }
 }
