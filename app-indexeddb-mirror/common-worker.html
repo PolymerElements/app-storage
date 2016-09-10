@@ -14,7 +14,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     var WEB_WORKERS = {};
     var HAS_SHARED_WORKER = typeof SharedWorker !== 'undefined';
     var HAS_WEB_WORKER = typeof Worker !== 'undefined';
-    var BASE_URI = document._currentScript.ownerDocument.baseURI;
+    var BASE_URI = (document.currentScript || document._currentScript).ownerDocument.baseURI;
     var WORKER_SCOPE_URL =
         Polymer.ResolveUrl.resolveUrl('common-worker-scope.js', BASE_URI);
 
