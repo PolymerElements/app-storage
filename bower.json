@@ -35,8 +35,8 @@
   },
   "ignore": [],
   "resolutions": {
-    "polymer": "master",
-    "webcomponentsjs": "v1-polymer-edits",
-    "test-fixture": "custom-elements-v1"
+    "webcomponentsjs": "v1",
+    "test-fixture": "custom-elements-v1",
+    "polymer": "2.0-preview"
   }
 }
