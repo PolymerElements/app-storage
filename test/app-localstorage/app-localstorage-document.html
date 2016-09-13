@@ -39,7 +39,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </test-fixture>
 
   <script>
-    document.addEventListener('WebComponentsReady', function() {
+    window.addEventListener('WebComponentsReady', function() {
       testAppStorageDocumentCompatibility({
         tagName: 'app-localstorage-document',
         fetchStoredValue: function(storagePath) {
