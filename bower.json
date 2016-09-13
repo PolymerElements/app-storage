@@ -16,7 +16,7 @@
   "homepage": "",
   "private": true,
   "dependencies": {
-    "polymer": "git@github.com:PolymerLabs/alacarte.git#master"
+    "polymer": "polymer/polymer#2.0-preview"
   },
   "devDependencies": {
     "web-component-tester": "^4.0.0",
