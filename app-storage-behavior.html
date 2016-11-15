@@ -467,7 +467,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       __pathRefersToArray: function(path) {
-        return (SPLICES_RX.test(path) || LENGTH_RX.test(path))
+        return (SPLICES_RX.test(path) || LENGTH_RX.test(path)) &&
             Array.isArray(this.get(this.__parentPath(path)));
       },
 
