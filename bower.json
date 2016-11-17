@@ -16,7 +16,8 @@
   "homepage": "",
   "private": true,
   "dependencies": {
-    "polymer": "polymer/polymer#2.0-preview"
+    "polymer": "polymer/polymer#2.0-preview",
+    "promise-polyfill": "polymerlabs/promise-polyfill#2.0-preview"
   },
   "devDependencies": {
     "web-component-tester": "^4.0.0",
@@ -30,7 +31,6 @@
     "iron-icons": "polymerelements/iron-icons#2.0-preview",
     "paper-button": "polymerelements/paper-button#2.0-preview",
     "platinum-sw": "polymerelements/platinum-sw#^1.3.0",
-    "promise-polyfill": "polymerlabs/promise-polyfill#2.0-preview",
     "test-fixture": "PolymerElements/test-fixture#custom-elements-v1"
   },
   "ignore": [],
