@@ -199,7 +199,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
 
         this.syncToMemory(function() {
-          this.set('data', this.__parseValueFromStorage());
+          var data = this.__parseValueFromStorage();
+          if (typeof(data)=='object') {
+            this.data = {};
+          }
+          this.set('data', data);
         });
       },
 
@@ -210,6 +214,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           return;
         }
         this.syncToMemory(function() {
+          if (typeof(event.detail.data)=='object') {
+            this.data = {};
+          }
           this.set('data', event.detail.data);
         });
       },
