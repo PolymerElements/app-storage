@@ -251,15 +251,17 @@ be available through this element.
 
           if (this.online) {
             
-            // set the value if persisted does not exist or data is primitive or if firebase data obj contain less keys than persisted (https://github.com/Polymer/polymer/issues/2565)
-            if (typeof this.data !== 'object' || Object.keys(this.persistedData).length === 0 || ( Object.keys(this.data).length <  Object.keys(this.persistedData).length)) {
-              this.persistedData = this.data;
-            } else {
+            if(this.persistedData !== this.data) {
+              // set the value if persistedData does not exist or if data is primitive or if persistedData is empty or if firebase data obj contain less keys than persisted (https://github.com/Polymer/polymer/issues/2565)
+              if (!this.persistedData || typeof this.data !== 'object' || Object.keys(this.persistedData).length === 0 || ( Object.keys(this.data).length <  Object.keys(this.persistedData).length)) {
+                this.persistedData = this.data;
+              } else {
 
-              // now, we loop over keys
-              for (var prop in this.data) {
-                if(this.persistedData[prop] !== this.data[prop]) {
-                  this.set(['persisedData', prop], this.data[prop]);
+                // now, we loop over keys
+                for (var prop in this.data) {
+                  if(this.persistedData[prop] !== this.data[prop]) {
+                    this.set(['persisedData', prop], this.data[prop]);
+                  }
                 }
               }
             }
