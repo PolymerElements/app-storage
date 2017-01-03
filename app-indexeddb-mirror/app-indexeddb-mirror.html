@@ -260,7 +260,7 @@ be available through this element.
                 // now, we loop over keys
                 for (var prop in this.data) {
                   if(this.persistedData[prop] !== this.data[prop]) {
-                    this.set(['persisedData', prop], this.data[prop]);
+                    this.set(['persistedData', prop], this.data[prop]);
                   }
                 }
               }
