@@ -25,10 +25,14 @@ property. As live data changes, `app-indexeddb-mirror` caches a copy of the live
 data in a local IndexedDB database. When the app is no longer connected to the
 network, `app-indexeddb-mirror` toggles its `persistedData` property to refer
 to a read-only copy of the corresponding data in IndexedDB.
+When the app start, until the `data` property is initialized, the element serves
+the cached read-only data to `persistedData` property if data was previously
+cached.
 
 This element is particularly useful in cases where an API or storage layer (such
 as Firebase, for example) does not support caching data for later use during
 user sessions that begin while the user is disconnected from the network.
+It also enables quick loading of the initial state of the app.
 
 Here is an example of using `app-indexeddb-mirror` with `iron-ajax`:
 
@@ -249,7 +253,8 @@ be available through this element.
             return this.client.validateSession(this.session);
           });
 
-          if (this.online) {
+          // persisted Data is linked to data if online && data is defined
+          if (this.online && this.data !== undefined) {
             this.persistedData = this.data;
             this.linkPaths('data', 'persistedData');
           } else {
@@ -257,7 +262,7 @@ be available through this element.
             this._enqueueTransaction(function() {
               return this.getStoredValue().then(function(value) {
                 // We may have gone online since retrieving the persisted value..
-                if (this.online || !this.client.supportsMirroring) {
+                if (this.online && this.data !== undefined || !this.client.supportsMirroring) {
                   return;
                 }
                 this.persistedData = value;
