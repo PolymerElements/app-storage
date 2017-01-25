@@ -19,7 +19,7 @@
     "polymer": "polymer/polymer#2.0-preview"
   },
   "devDependencies": {
-    "web-component-tester": "^4.0.0",
+    "web-component-tester": "v6.0.0-prerelease.5",
     "paper-input": "polymerelements/paper-input#2.0-preview",
     "moment": "^2.12.0",
     "paper-styles": "polymerelements/paper-styles#2.0-preview",
