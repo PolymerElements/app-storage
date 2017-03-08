@@ -29,6 +29,7 @@
     "paper-input": "polymerelements/paper-input#2.0-preview",
     "paper-styles": "polymerelements/paper-styles#2.0-preview",
     "platinum-sw": "polymerelements/platinum-sw#2.0-preview",
+    "promise-polyfill": "polymerlabs/promise-polyfill#2.0-preview",
     "web-component-tester": "^6.0.0-prerelease.6",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0-rc.1"
   },
