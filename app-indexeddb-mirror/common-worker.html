@@ -20,7 +20,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           var scripts = document.getElementsByTagName('script');
           return scripts[scripts.length - 1];
         })();
-    var BASE_URI = currentScript.ownerDocument.baseURI;
+
+    // base uri workaround for IE and Safari
+    var BASE_URI = document._currentScript ? document._currentScript.baseURI :
+          (HTMLImports.importForElement ? HTMLImports.importForElement(document.currentScript).baseURI :
+          (document.currentScript ? document.currentScript.baseURI : './'));
     var WORKER_SCOPE_URL =
         Polymer.ResolveUrl.resolveUrl('common-worker-scope.js', BASE_URI);
 
