@@ -54,6 +54,8 @@
       }
     }
   },
-  "ignore": []
+  "ignore": [],
+  "resolutions": {
+    "polymer": "^2.0.0-rc.1"
+  }
 }
-
