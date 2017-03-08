@@ -45,7 +45,13 @@
       var connectEvent = new EventConstructor('connect');
 
       connectEvent.ports = event.ports;
-      self.dispatchEvent(connectEvent);
+
+      // IE workaround. Events explode in IE
+      try {
+        self.dispatchEvent(connectEvent);
+      } catch (e) {
+        self.appIndexedDBMirrorWorker.registerClient(event.ports[0]);
+      }
     }
   }.bind(this));
 
