@@ -48,6 +48,7 @@
     // Maybe useful in case we want to notify clients of changes..
     this[CLIENT_PORTS] = new Array;
     this[DB_OPENS] = null;
+    this.supportsIndexedDB = self.indexedDB != null;
 
     this.openDb();
 
@@ -55,14 +56,16 @@
         'unhandledrejection', function(error){ console.error(error); });
     self.addEventListener(
         'error', function(error) { console.error(error); });
-
-    this.supportsIndexedDB = self.indexedDB != null;
     console.log('AppIndexedDBMirrorWorker started...');
   };
 
   AppIndexedDBMirrorWorker.prototype = {
 
     openDb: function() {
+      if (!self.Promise || !this.supportsIndexedDB) {
+        return;
+      }
+
       this.__dbOpens = this.__dbOpens || new Promise(function(resolve, reject) {
         console.log('Opening database..');
 
@@ -94,6 +97,10 @@
     },
 
     closeDb: function() {
+      if (!self.Promise || !this.supportsIndexedDB) {
+        return;
+      }
+
       if (this.__dbOpens == null) {
         return Promise.resolve();
       }
@@ -119,6 +126,10 @@
      * with the error reported by the transaction.
      */
     operateOnStore: function(operation, storeName, mode) {
+      if (!self.Promise || !this.supportsIndexedDB) {
+        return;
+      }
+
       var operationArgs = Array.from(arguments).slice(3);
 
       return this.openDb().then(function(db) {
@@ -189,6 +200,10 @@
      * transaction, or rejects if an unsupported method is attempted.
      */
     transaction: function(method, key, value) {
+      if (!self.Promise || !this.supportsIndexedDB) {
+        return;
+      }
+
       value = value || null;
 
       switch(method) {
@@ -211,6 +226,10 @@
      * has completed and the session has been updated (if necessary).
      */
     validateSession: function(session) {
+      if (!self.Promise || !this.supportsIndexedDB) {
+        return;
+      }
+
       return Promise.all([
         this.openDb(),
         this.get(INTERNAL_STORE_NAME, 'session')
