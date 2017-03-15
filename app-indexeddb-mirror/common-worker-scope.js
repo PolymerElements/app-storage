@@ -50,7 +50,7 @@
 
         self.dispatchEvent(connectEvent);
       } catch (e) {
-        self.appIndexedDBMirrorWorker.registerClient(event.ports[0]);
+        setTimeout(function() {self.appIndexedDBMirrorWorker.registerClient(event.ports[0]);}, 100);
       }
     }
   }.bind(this));
