@@ -20,7 +20,13 @@
     });
 
     try {
-      var testWorkerEvents = new CustomEvent('testWorkerEvents');
+      var EventConstructor =
+          self.CustomEvent ||
+          self.Event ||
+          // NOTE(cdata): Have mercy on my soul..
+          event.__proto__.__proto__.constructor;
+
+      var testWorkerEvents = new EventConstructor('testWorkerEvents');
       self.dispatchEvent(testWorkerEvents);
       return;
 
