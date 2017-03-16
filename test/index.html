@@ -13,23 +13,48 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
   <title>app-storage tests</title>
+  <script>
+    (function () {
+
+        if ( typeof window.CustomEvent === "function" ) return false;
+
+        function CustomEvent ( event, params ) {
+          params = params || { bubbles: false, cancelable: false, detail:  undefined };
+        var evt = document.createEvent( 'CustomEvent' );
+        evt.initCustomEvent( event, params.bubbles, params.cancelable, params.detail );
+        return evt;
+      }
+
+      CustomEvent.prototype = window.Event.prototype;
+
+      window.CustomEvent = CustomEvent;
+    })();
+  </script>
   <script src="../../web-component-tester/browser.js"></script>
 </head>
 <body>
   <script>
-    if (window.indexedDB != null && window.Promise) {
-      WCT.loadSuites([
-        './app-localstorage/app-localstorage-document.html?dom=shadow',
-        './app-indexeddb-mirror/app-indexeddb-mirror.html?dom=shadow',
-        './app-localstorage/app-localstorage-document.html?wc-shadydom=true&wc-register=true',
-        './app-indexeddb-mirror/app-indexeddb-mirror.html?wc-shadydom=true&wc-register=true'
-      ]);
-    } else {
-      WCT.loadSuites([
-        './app-localstorage/app-localstorage-document.html?dom=shadow',
-        './app-localstorage/app-localstorage-document.html?wc-shadydom=true&wc-register=true'
-      ]);
+    var featureDetect = new Worker('feature-detect.js');
+
+    featureDetect.onmessage = function(e) {
+      if (e.data === 'pass') {
+        WCT.loadSuites([
+          './app-localstorage/app-localstorage-document.html?dom=shadow',
+          './app-indexeddb-mirror/app-indexeddb-mirror.html?dom=shadow',
+          './app-localstorage/app-localstorage-document.html?wc-shadydom=true&wc-ce=true',
+          './app-indexeddb-mirror/app-indexeddb-mirror.html?wc-shadydom=true&wc-ce=true'
+        ]);
+      } else {
+        WCT.loadSuites([
+          './app-localstorage/app-localstorage-document.html?dom=shadow',
+          './app-localstorage/app-localstorage-document.html?wc-shadydom=true&wc-ce=true'
+        ]);
+      }
+
+      document.dispatchEvent(new CustomEvent('DOMContentLoaded'));
     }
+
+    featureDetect.postMessage('featureDetect');
   </script>
 </body>
 </html>
