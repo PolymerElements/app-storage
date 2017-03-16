@@ -43,15 +43,10 @@
           // NOTE(cdata): Have mercy on my soul..
           event.__proto__.__proto__.constructor;
 
-      // IE / Edge workaround. dispatching on self does nothing.
-      try {
-        var connectEvent = new EventConstructor('connect');
-        connectEvent.ports = event.ports;
+      var connectEvent = new EventConstructor('connect');
+      connectEvent.ports = event.ports;
 
-        self.dispatchEvent(connectEvent);
-      } catch (e) {
-        setTimeout(function() {self.appIndexedDBMirrorWorker.registerClient(event.ports[0]);}, 100);
-      }
+      self.dispatchEvent(connectEvent);
     }
   }.bind(this));
 
