@@ -78,7 +78,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         var timeout = window.setTimeout(function() {
           this.skip();
-        }, 3000);
+        }.bind(this), 3000);
 
         featureDetect.onmessage = function(e) {
           window.clearTimeout(timeout);
