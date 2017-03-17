@@ -7,9 +7,35 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 -->
+
 <script>
 (function() {
   'use strict';
+
+  if (typeof Object.assign != 'function') {
+    Object.assign = function(target, varArgs) { // .length of function is 2
+      'use strict';
+      if (target == null) { // TypeError if undefined or null
+        throw new TypeError('Cannot convert undefined or null to object');
+      }
+
+      var to = Object(target);
+
+      for (var index = 1; index < arguments.length; index++) {
+        var nextSource = arguments[index];
+
+        if (nextSource != null) { // Skip over if undefined or null
+          for (var nextKey in nextSource) {
+            // Avoid bugs when hasOwnProperty is shadowed
+            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+              to[nextKey] = nextSource[nextKey];
+            }
+          }
+        }
+      }
+      return to;
+    };
+  }
 
   function testAppStorageDocumentCompatibility(extendedContext) {
     var context = {
@@ -23,7 +49,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       unsetValue: function(storage) {
         storage.set('data', null);
         return storage.transactionsComplete;
-      }
+      },
+      skipTests: false
     };
 
     function awaitStoredValue(storage, path) {
@@ -36,6 +63,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     Object.assign(context, extendedContext);
 
     suite('app storage compatibility: <' + context.tagName + '>', function() {
+      setup(function() {
+        if (context.skipTests) {
+          this.skip();
+        }
+      });
+
       suite('basic storage scenarios', function() {
         var storage;
 
