@@ -170,7 +170,7 @@ Only supports storing JSON-serializable values.
 
 ##Polymer.AppNetworkStatusBehavior
 
-`Polymer.appNetworkStatusBehavior` tracks the status of whether the browser
+`Polymer.AppNetworkStatusBehavior` tracks the status of whether the browser
 is online or offline. True if the browser is online, and false if the browser is
 offline matching the HTML browser state spec.
 
