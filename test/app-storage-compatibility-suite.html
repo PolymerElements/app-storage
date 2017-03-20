@@ -11,6 +11,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <script>
 (function() {
   'use strict';
+
   function testAppStorageDocumentCompatibility(extendedContext) {
     var context = {
       tagName: 'unknown-element',
@@ -51,12 +52,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var storage;
 
         setup(function() {
+          if (context.skipTests) {
+            return;
+          }
+
           storage = fixture('BasicStorage');
           storage.set('data', {});
           return storage.transactionsComplete;
         });
 
         teardown(function() {
+          if (context.skipTests) {
+            return;
+          }
+
           return context.unsetValue(storage);
         });
 
@@ -133,6 +142,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           suite('manipulating arrays', function() {
             setup(function() {
+              if (context.skipTests) {
+                return;
+              }
+
               storage.set('data.arrayProperty', [1, 2, 3]);
 
               return awaitStoredValue(storage, 'data.arrayProperty')
@@ -234,6 +247,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var storageTwo;
 
         setup(function() {
+          if (context.skipTests) {
+            return;
+          }
+
           var syncingStorage = fixture('SyncingStorage');
 
           storageOne = syncingStorage[0];
@@ -246,6 +263,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
 
         teardown(function() {
+          if (context.skipTests) {
+            return;
+          }
+
           context.unsetValue(storageOne);
           return context.awaitUpdate(storageTwo).then(function() {
             expect(storageTwo.data).to.be.eql(storageOne.data);
