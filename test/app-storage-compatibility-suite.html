@@ -23,8 +23,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       unsetValue: function(storage) {
         storage.set('data', null);
         return storage.transactionsComplete;
-      },
-      skipTests: false
+      }
     };
 
     function awaitStoredValue(storage, path) {
@@ -41,12 +40,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     }
 
     suite('app storage compatibility: <' + context.tagName + '>', function() {
-      setup(function() {
-        if (context.skipTests) {
-          this.skip();
-        }
-      });
-
       suite('basic storage scenarios', function() {
         var storage;
 
