@@ -21,10 +21,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           return scripts[scripts.length - 1];
         })();
 
-    // base uri workaround for IE and Safari
-    var BASE_URI = document._currentScript ? document._currentScript.baseURI :
-          (HTMLImports.importForElement ? HTMLImports.importForElement(document.currentScript).baseURI :
-          (document.currentScript ? document.currentScript.baseURI : './'));
+    // fallback baseURI
+    var BASE_URI = document.currentScript ? document.currentScript.baseURI : './';
+
+    // Polymer 2 baseURI polyfill for IE and Safari
+    if (Polymer.Element && HTMLImports.importForElement) {
+      BASE_URI = HTMLImports.importForElement(document.currentScript).baseURI;
+
+    // Polymer 1
+    } else {
+      BASE_URI = document._currentScript.baseURI;
+    }
     var WORKER_SCOPE_URL =
         Polymer.ResolveUrl.resolveUrl('common-worker-scope.js', BASE_URI);
 
