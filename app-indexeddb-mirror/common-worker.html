@@ -28,10 +28,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     if (Polymer.Element && HTMLImports.importForElement) {
       BASE_URI = HTMLImports.importForElement(document.currentScript).baseURI;
 
-    // Polymer 1
-    } else {
+    } else { // Polymer 1
       BASE_URI = document._currentScript.baseURI;
     }
+
     var WORKER_SCOPE_URL =
         Polymer.ResolveUrl.resolveUrl('common-worker-scope.js', BASE_URI);
 
