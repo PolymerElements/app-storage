@@ -27,7 +27,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     // Polymer 2 baseURI polyfill for IE and Safari
     if (Polymer.Element && HTMLImports.importForElement) {
       BASE_URI = HTMLImports.importForElement(document.currentScript).baseURI;
-
     } else { // Polymer 1
       BASE_URI = document._currentScript.baseURI;
     }
