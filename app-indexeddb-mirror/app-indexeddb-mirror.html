@@ -187,6 +187,16 @@ be available through this element.
           },
 
           /**
+           * `disconnected` treat this element as if it is offline. 
+           * This is useful when data is linked to a remote resource 
+           * that not accessible (e.g resource only accessible when a user in logged-in) 
+           */
+          disconnected: {
+            type: Boolean,
+            value: false
+          },
+
+          /**
            * When online, this property is a pass-through value mapped directly
            * to the `data` property of this element.
            *
@@ -200,7 +210,7 @@ be available through this element.
         },
 
         observers: [
-          '__updatePersistedData(client, key, session, online)',
+          '__updatePersistedData(client, key, session, online, disconnected)',
           '__updatePersistedData(data.*)',
         ],
 
@@ -249,21 +259,38 @@ be available through this element.
             return this.client.validateSession(this.session);
           });
 
-          if (this.online) {
-            this.persistedData = this.data;
-            this.linkPaths('data', 'persistedData');
-          } else {
-            this.unlinkPaths('data', 'persistedData');
-            this._enqueueTransaction(function() {
-              return this.getStoredValue().then(function(value) {
-                // We may have gone online since retrieving the persisted value..
-                if (this.online || !this.client.supportsMirroring) {
-                  return;
+          this.debounce('app-indexddb-mirror-update', function() {
+            
+            if (this.online && !this.disconnected) {
+              
+              if(this.persistedData !== this.data) {
+                // set the value if persistedData does not exist or if data is primitive or if persistedData is empty or if firebase data obj contain less keys than persisted (https://github.com/Polymer/polymer/issues/2565)
+                if (!this.persistedData || typeof this.data !== 'object' || Object.keys(this.persistedData).length === 0 || ( Object.keys(this.data).length <  Object.keys(this.persistedData).length)) {
+                  this.persistedData = this.data;
+                } else {
+
+                  // now, we loop over keys
+                  for (var prop in this.data) {
+                    if(this.persistedData[prop] !== this.data[prop]) {
+                      this.set(['persistedData', prop], this.data[prop]);
+                    }
+                  }
                 }
-                this.persistedData = value;
-              }.bind(this));
-            });
-          }
+              }
+              this.linkPaths('data', 'persistedData');
+            } else {
+              this.unlinkPaths('data', 'persistedData');
+              this._enqueueTransaction(function() {
+                return this.getStoredValue().then(function(value) {
+                  // We may have gone online since retrieving the persisted value..
+                  if (this.online || !this.client.supportsMirroring) {
+                    return;
+                  }
+                  this.persistedData = value;
+                }.bind(this));
+              });
+            }
+          });
         }
       });
     })();
