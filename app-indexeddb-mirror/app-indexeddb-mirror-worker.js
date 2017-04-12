@@ -66,7 +66,7 @@
       this.__dbOpens = this.__dbOpens || new Promise(function(resolve, reject) {
         console.log('Opening database..');
 
-        var request = indexedDB.open(this[DB_NAME], DB_VERSION);
+        var request = self.indexedDB.open(this[DB_NAME], DB_VERSION);
 
         request.onupgradeneeded = function(event) {
           console.log('Upgrade needed:', event.oldVersion, '=>', event.newVersion);
@@ -241,7 +241,7 @@
         this.handleClientMessage(event, port)
       }.bind(this));
 
-      if (!port in this[CLIENT_PORTS]) {
+      if (!(port in this[CLIENT_PORTS])) {
         this[CLIENT_PORTS].push(port);
       }
 
@@ -310,6 +310,6 @@
   self.appIndexedDBMirrorWorker = new AppIndexedDBMirrorWorker();
 
   self.addEventListener('connect', function(event) {
-    appIndexedDBMirrorWorker.registerClient(event.ports[0])
+    self.appIndexedDBMirrorWorker.registerClient(event.ports[0])
   });
 })();
