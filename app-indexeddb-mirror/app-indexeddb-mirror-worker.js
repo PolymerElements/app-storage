@@ -34,9 +34,9 @@
    * Class that implements a worker process negotiates connections from clients
    * in other threads, and operates on an IndexedDB database object store.
    *
-   * @param {string} _dbName The name of the IndexedDB database to create and
+   * @param {string=} _dbName The name of the IndexedDB database to create and
    * open.
-   * @param {string} _storeName The name of the IndexedDB object store to use
+   * @param {string=} _storeName The name of the IndexedDB object store to use
    * for storing values.
    *
    * @constructor
@@ -242,7 +242,7 @@
       port.addEventListener('message', function(event) {
         this.handleClientMessage(event, port)
       }.bind(this));
-      let isPortInClient = port.toString() in this[CLIENT_PORTS];
+      var isPortInClient = port.toString() in this[CLIENT_PORTS];
       if (!isPortInClient) {
         this[CLIENT_PORTS].push(port);
       }
@@ -309,7 +309,7 @@
     }
   };
 
-  self.appIndexedDBMirrorWorker = new AppIndexedDBMirrorWorker('', '');
+  self.appIndexedDBMirrorWorker = new AppIndexedDBMirrorWorker();
 
   self.addEventListener('connect', function(event) {
     self.appIndexedDBMirrorWorker.registerClient(event.ports[0])
