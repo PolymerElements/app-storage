@@ -34,10 +34,12 @@
    * Class that implements a worker process negotiates connections from clients
    * in other threads, and operates on an IndexedDB database object store.
    *
-   * @param {string} _dbName The name of the IndexedDB database to create and
+   * @param {string=} _dbName The name of the IndexedDB database to create and
    * open.
-   * @param {string} _storeName The name of the IndexedDB object store to use
+   * @param {string=} _storeName The name of the IndexedDB object store to use
    * for storing values.
+   *
+   * @constructor
    */
   function AppIndexedDBMirrorWorker(_dbName, _storeName) {
     _dbName = _dbName || 'app-mirror';
@@ -112,14 +114,14 @@
      * store instance.
      * @param {string} storeName The name of the object store to operate on.
      * @param {string} mode The mode of the transaction that will be performed.
-     * @param {...} operationArg The arguments to call the method named by
+     * @param {...*} operationArgs The arguments to call the method named by
      * the operation parameter.
      * @return {Promise} A promise that resolves when the transaction completes,
      * with the result of the transaction, or rejects if the transaction fails
      * with the error reported by the transaction.
      */
-    operateOnStore: function(operation, storeName, mode) {
-      var operationArgs = Array.from(arguments).slice(3);
+    operateOnStore: function(operation, storeName, mode, operationArgs) {
+      operationArgs = Array.from(arguments).slice(3);
 
       return this.openDb().then(function(db) {
 
@@ -159,7 +161,7 @@
      * @param {string} storeName The name of the object store to operate on.
      * @param {string} key The key in the object store that corresponds to the
      * value that should be put.
-     * @param {} value The value to be put in the object store at the given key.
+     * @param {*} value The value to be put in the object store at the given key.
      * @return {Promise} A promise that resolves with the outcome of the
      * operation.
      */
@@ -184,7 +186,7 @@
      * @param {string} method The method of the transaction. Supported methods
      * are `"get"` and `"set"`.
      * @param {string} key The key to get or set.
-     * @param {=} value The value to set, when the method is `"set"`.
+     * @param {Object} value The value to set, when the method is `"set"`.
      * @return {Promise} A promise that resolves with the outcome of the
      * transaction, or rejects if an unsupported method is attempted.
      */
@@ -240,8 +242,8 @@
       port.addEventListener('message', function(event) {
         this.handleClientMessage(event, port)
       }.bind(this));
-
-      if (!(port in this[CLIENT_PORTS])) {
+      var isPortInClient = port.toString() in this[CLIENT_PORTS];
+      if (!isPortInClient) {
         this[CLIENT_PORTS].push(port);
       }
 
@@ -265,7 +267,7 @@
      */
     handleClientMessage: function(event, port) {
       if (!event.data) {
-        return;
+        return null;
       }
 
       var id = event.data.id;

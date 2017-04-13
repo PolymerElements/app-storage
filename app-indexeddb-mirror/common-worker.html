@@ -40,6 +40,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      *
      * @param {string} workerUrl The URL of the worker script to create a worker
      * instance with.
+     *
+     * @constructor
      */
     Polymer.CommonWorker = function CommonWorker (workerUrl) {
       if (HAS_SHARED_WORKER) {
@@ -82,10 +84,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * A proxy method that forwards all calls to the backing `WebWorker`
        * instance.
        *
-       * @param {...} addEventListenerArgs The arguments to call the same method
-       * on the `WebWorker` with.
+       * @param {String|string|undefined} eventType The event to listen for
+       * @param {Function} listenerFunction The function to be attached to the event
+       * @param {Object=} options addEventListener Options object
        */
-      addEventListener: function() {
+      addEventListener: function(eventType, listenerFunction, options) {
         if (this.webWorker) {
           return this.webWorker.addEventListener.apply(this.webWorker, arguments);
         }
