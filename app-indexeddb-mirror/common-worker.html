@@ -101,7 +101,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * @param {...} removeEventListenerArgs The arguments to call the same
        * method on the `WebWorker` with.
        */
-      removeEventListener: function(removeEventListenerArgs) {
+      removeEventListener: function() {
         if (this.webWorker) {
           return this.webWorker
               .removeEventListener.apply(this.webWorker, arguments);
