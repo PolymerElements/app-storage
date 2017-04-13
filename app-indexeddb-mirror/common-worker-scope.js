@@ -49,5 +49,5 @@
     }
   }.bind(this));
 
-  self.importScripts([workerScript]);
+  self.importScripts(workerScript);
 })();

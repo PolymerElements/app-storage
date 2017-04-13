@@ -27,6 +27,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      *
      * @param {string} _workerUrl The URL to use when initializing the
      * corresponding WebWorker.
+     *
+     * @constructor
      */
     Polymer.AppIndexedDBMirrorClient =
         function AppIndexedDBMirrorClient(_workerUrl) {
@@ -53,7 +55,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        *
        * @param {string} session The session to validate the current session
        * against.
-       * @return {Promise} A promise that resolves when the worker confirms that
+       * @return {Promise|undefined} A promise that resolves when the worker confirms that
        * the session has been validated.
        */
       validateSession: function(session) {
@@ -73,7 +75,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * Sends a message to the worker and awaits and handles a corresponding
        * response.
        *
-       * @param {} message Any value that can be sent via `postMessage` to the
+       * @param {*} message Any value that can be sent via `postMessage` to the
        * worker.
        * @return {Promise} A promise that resolves when a corresponding response
        * message has been received by from the worker. Requests are given a
@@ -113,7 +115,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * `"set"`)
        * @param {string} key The key in the IndexedDB object store to operate
        * on.
-       * @param {=} value The value to set at `key`, if using the `"set"`
+       * @param {Object} value The value to set at `key`, if using the `"set"`
        * `method`.
        * @return {Promise} A promise that resolves when the worker indicates
        * that the transaction has completed.
