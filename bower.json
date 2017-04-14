@@ -16,7 +16,7 @@
   "homepage": "",
   "private": true,
   "dependencies": {
-    "polymer": "polymer/polymer#2.0.0-rc.3"
+    "polymer": "polymer/polymer#^2.0.0-rc.3"
   },
   "devDependencies": {
     "font-roboto": "polymerelements/font-roboto#^1.0.0",
