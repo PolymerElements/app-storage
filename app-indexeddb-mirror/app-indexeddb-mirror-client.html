@@ -9,6 +9,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="common-worker.html">
+
 <script>
   (function() {
     'use strict';
@@ -148,15 +149,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           return this[CONNECTS_TO_WORKER];
         }
 
-        console.log('App IndexedDB Client connecting..');
-
         return this[CONNECTS_TO_WORKER] = new Promise(function(resolve) {
           var worker = new Polymer.CommonWorker(this[WORKER_URL]);
 
           worker.port.addEventListener('message', function(event) {
             if (event.data &&
                 event.data.type === 'app-mirror-connected') {
-              console.log('App IndexedDB Client connected!');
               this[CONNECTED] = true;
               this[SUPPORTS_MIRRORING] = event.data.supportsIndexedDB;
               resolve(worker);
