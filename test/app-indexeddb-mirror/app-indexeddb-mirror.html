@@ -74,7 +74,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       });
 
       suite('basic mirroring', function() {
-        var mirror;
+        var mirror,
+            mirrorForCheck;
 
         setup(function() {
           mirror = fixture('BasicMirror');
@@ -117,6 +118,40 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             return mirror.transactionsComplete.then(function() {
               return expectPersistedValue(mirror.key, mirror.data);
+            });
+          });
+
+          test('boots up with persisted value when data is undefined', function() {
+            if (!mirror.client.supportsMirroring) {
+              return;
+            }
+            
+            var testData = {
+	            foo: 'bar'
+            };
+            
+            // Initialize Storage with test data 
+            mirror.data = testData;
+            expect(mirror.persistedData).to.be.deep.equal(mirror.data);
+            
+            // destroy mirror
+            mirror.client.closeDb();
+            
+            // boot test mirror
+            mirrorForCheck = fixture('SecondMirror');
+            
+            // Check the non-existence of data
+            expect(mirrorForCheck.data).to.be.deep.equal(undefined);
+            
+            return mirror.transactionsComplete.then(function() {
+              // check value in Storage
+              return expectPersistedValue(mirrorForCheck.key, testData)
+                  .then(function () {
+	
+	                  // Check: correct initial value of persistedData && data is still undefined
+	                  expect(mirrorForCheck.data).to.be.deep.equal(undefined);
+	                  expect(mirrorForCheck.persistedData).to.be.deep.equal(testData);
+                  });
             });
           });
         });
