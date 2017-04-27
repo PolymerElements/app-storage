@@ -122,10 +122,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * If the data value represented by this storage instance is new, this
        * method generates an attempt to write the value to storage.
        *
-       * @abstract
+       *
+       * @param {*} args
        * @return {Promise} a Promise that settles only once the write has.
        */
-      save: function() {
+      saveValue: function(args) {
         return Promise.resolve();
       },
 
@@ -146,7 +147,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        */
       destroy: function() {
         this.data = this.zeroValue;
-        return this.save();
+        return this.saveValue();
       },
 
       /**
@@ -183,12 +184,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       /**
        * Override this method to implement reading a value from storage.
        *
-       * @abstract
+       *
        * @param {string} storagePath The path (through storage) of the value to
        *   create, relative to the root of storage associated with this instance.
        * @return {Promise} A promise that resolves with the canonical value stored
        *   at the provided path when the transaction has completed. _If there is no
-       *   such value at she provided path through storage, then the promise will
+       *   such value at the provided path through storage, then the promise will
        *   resolve to `undefined`._ The promise will be rejected if the transaction
        *   fails for any reason.
        */
@@ -200,7 +201,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * Override this method to implement creating and updating
        * stored values.
        *
-       * @abstract
+       *
        * @param {string} storagePath The path of the value to update, relative
        *   to the root storage path configured for this instance.
        * @param {*} value The updated in-memory value to apply to the stored value
@@ -469,7 +470,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       __pathRefersToArray: function(path) {
-        return (SPLICES_RX.test(path) || LENGTH_RX.test(path))
+        return (SPLICES_RX.test(path) || LENGTH_RX.test(path)) &&
             Array.isArray(this.get(this.__parentPath(path)));
       },
 

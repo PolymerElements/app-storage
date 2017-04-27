@@ -17,7 +17,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../../web-component-tester/browser.js"></script>
 
-  <link rel="import" href="../../../promise-polyfill/promise-polyfill.html">
   <link rel="import" href="../../app-indexeddb-mirror/app-indexeddb-mirror.html">
   <script src="helpers.js"></script>
 </head>
@@ -36,7 +35,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <template>
       <app-indexeddb-mirror
           session="test"
-          key="basic-mirror" log>
+          key="basic-mirror">
+      </app-indexeddb-mirror>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="NoSessionMirror">
+    <template>
+      <app-indexeddb-mirror
+          key="basic-mirror">
       </app-indexeddb-mirror>
     </template>
   </test-fixture>
@@ -61,6 +68,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     }
 
     suite('<app-indexeddb-mirror>', function() {
+      // skips tests due to async bug in mocha
+      this.ctx.skip = function() {
+        this.pending = true;
+      }.bind(this);
+
+      setup(function(done) {
+        var featureDetect = new Worker('../feature-detect.js');
+
+        var timeout = window.setTimeout(function() {
+          this.skip();
+        }.bind(this), 3000);
+
+        featureDetect.onmessage = function(e) {
+          window.clearTimeout(timeout);
+          var error;
+          if (e.data !== 'pass') {
+            this.skip();
+          }
+          done();
+        }.bind(this);
+
+        featureDetect.postMessage('featureDetect');
+      });
+
       teardown(function() {
         appStorageTestHelpers.restoreNavigatorOnLine();
         return appStorageTestHelpers.deleteIdbDatabase('app-mirror');
@@ -110,6 +141,32 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             return mirror.transactionsComplete.then(function() {
               return expectPersistedValue(mirror.key, mirror.data);
+            });
+          });
+        });
+
+        suite('when session is set lazily', function() {
+          var secondMirror;
+
+          setup(function() {
+            mirror.data = {
+              foo: 'bar'
+            };
+            secondMirror = fixture('NoSessionMirror');
+            return Promise.all([
+              mirror.transactionsComplete,
+              secondMirror.transactionsComplete
+            ]);
+          });
+
+          test('the data is preserved', function() {
+            if (!mirror.client.supportsMirroring) {
+              return;
+            }
+
+            secondMirror.session = 'test';
+            return secondMirror.transactionsComplete.then(function() {
+              return expectPersistedValue('basic-mirror', mirror.data);
             });
           });
         });

@@ -16,11 +16,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     var HAS_WEB_WORKER = typeof Worker !== 'undefined';
     // NOTE(cdata): see http://www.2ality.com/2014/05/current-script.html
     var currentScript = document._currentScript || document.currentScript ||
-      (function() {
-        var scripts = document.getElementsByTagName('script');
-        return scripts[scripts.length - 1];
-      })();
-    var BASE_URI = currentScript.ownerDocument.baseURI;
+        (function() {
+          var scripts = document.getElementsByTagName('script');
+          return scripts[scripts.length - 1];
+        })();
+
+    // fallback baseURI
+    var BASE_URI = document.currentScript ? document.currentScript.baseURI : './';
+
+    // Polymer 2 baseURI polyfill for IE and Safari
+    if (Polymer.Element && HTMLImports.importForElement) {
+      BASE_URI = HTMLImports.importForElement(document.currentScript).baseURI;
+    } else { // Polymer 1
+      BASE_URI = document._currentScript.baseURI;
+    }
+
     var WORKER_SCOPE_URL =
         Polymer.ResolveUrl.resolveUrl('common-worker-scope.js', BASE_URI);
 
@@ -40,6 +50,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      *
      * @param {string} workerUrl The URL of the worker script to create a worker
      * instance with.
+     *
+     * @constructor
      */
     Polymer.CommonWorker = function CommonWorker (workerUrl) {
       if (HAS_SHARED_WORKER) {
@@ -82,10 +94,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * A proxy method that forwards all calls to the backing `WebWorker`
        * instance.
        *
-       * @param {...} addEventListenerArgs The arguments to call the same method
-       * on the `WebWorker` with.
+       * @param {String|string|undefined} eventType The event to listen for
+       * @param {Function} listenerFunction The function to be attached to the event
+       * @param {Object=} options addEventListener Options object
        */
-      addEventListener: function() {
+      addEventListener: function(eventType, listenerFunction, options) {
         if (this.webWorker) {
           return this.webWorker.addEventListener.apply(this.webWorker, arguments);
         }
