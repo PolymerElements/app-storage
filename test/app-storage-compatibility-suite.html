@@ -226,27 +226,35 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       suite('syncing storage scenarios', function() {
         var storageOne;
         var storageTwo;
+        var storageOther;
 
         setup(function() {
           var syncingStorage = fixture('SyncingStorage');
 
           storageOne = syncingStorage[0];
           storageTwo = syncingStorage[1];
+          storageOther = syncingStorage[2];
 
           return Promise.all([
             storageOne.transactionsComplete,
-            storageTwo.transactionsComplete
+            storageTwo.transactionsComplete,
+            storageOther.transactionsComplete,
           ]);
         });
 
         teardown(function() {
           context.unsetValue(storageOne);
-          return context.awaitUpdate(storageTwo).then(function() {
-            expect(storageTwo.data).to.be.eql(storageOne.data);
-          });
+          context.unsetValue(storageOther);
+          return Promise.all([
+            context.awaitUpdate(storageTwo).then(function() {
+              expect(storageTwo.data).to.be.eql(storageOne.data);
+            }),
+            context.awaitUpdate(storageOther),
+          ]);
         });
 
         test('syncs primitives across elements', function() {
+          storageOther.set('data.other', 'other');
           storageOne.set('data.numberProperty', 1);
 
           return Promise.all([
@@ -257,6 +265,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             expect(value).to.be.equal(1);
             expect(storageOne.get('data.numberProperty')).to.be.equal(value);
             expect(storageTwo.get('data.numberProperty')).to.be.equal(value);
+
+            // other key
+            expect(storageOne.get('data.other')).to.not.be.ok;
+            expect(storageOther.get('data.numberProperty')).to.not.be.equal(value);
+            expect(storageOther.get('data.other')).to.be.equal('other');
           });
         });
 

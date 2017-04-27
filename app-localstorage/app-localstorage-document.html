@@ -210,7 +210,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       __setStorageValue: function(key, value) {
-        this.storage.setItem(this.key, JSON.stringify(this.data));
+	if (typeof value === 'undefined') value = null;
+        this.storage.setItem(this.key, JSON.stringify(value));
       }
     });
   </script>
