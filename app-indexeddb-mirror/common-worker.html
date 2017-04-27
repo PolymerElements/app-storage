@@ -25,10 +25,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     var BASE_URI = document.currentScript ? document.currentScript.baseURI : './';
 
     // Polymer 2 baseURI polyfill for IE and Safari
-    if (Polymer.Element && HTMLImports.importForElement) {
+    if (Polymer.Element && window.HTMLImports && HTMLImports.importForElement) {
       BASE_URI = HTMLImports.importForElement(document.currentScript).baseURI;
-    } else { // Polymer 1
-      BASE_URI = document._currentScript.baseURI;
+
+      // Polymer 1 or no HTML Imports
+    } else {
+      var currentScript = document._currentScript ? document._currentScript :
+          document.currentScript;
+      BASE_URI = currentScript.ownerDocument.baseURI;
     }
 
     var WORKER_SCOPE_URL =
