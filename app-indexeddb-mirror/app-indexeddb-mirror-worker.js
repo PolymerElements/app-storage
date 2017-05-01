@@ -249,8 +249,8 @@
 
       port.start();
       port.postMessage({
-        type: 'app-mirror-connected',
-        supportsIndexedDB: this.supportsIndexedDB
+        'type': 'app-mirror-connected',
+        'supportsIndexedDB': this.supportsIndexedDB
       });
 
       console.log('New client connected.');
@@ -270,31 +270,27 @@
         return null;
       }
 
-      var id = event.data.id;
+      var id = event.data['id'];
 
-      switch(event.data.type) {
+      switch (event.data['type']) {
         case 'app-mirror-close-db':
           this.closeDb().then(function() {
-            port.postMessage({
-              type: 'app-mirror-db-closed',
-              id: id
-            });
+            port.postMessage({'type': 'app-mirror-db-closed', 'id': id});
           });
         case 'app-mirror-validate-session':
-          this.validateSession(event.data.session).then(function() {
-            port.postMessage({
-              type: 'app-mirror-session-validated',
-              id: id
-            });
+          this.validateSession(event.data['session']).then(function() {
+            port.postMessage(
+                {'type': 'app-mirror-session-validated', 'id': id});
           });
           break;
         case 'app-mirror-transaction':
-          this.transaction(event.data.method, event.data.key, event.data.value)
+          this.transaction(
+                  event.data['method'], event.data['key'], event.data['value'])
               .then(function(result) {
                 port.postMessage({
-                  type: 'app-mirror-transaction-result',
-                  id: id,
-                  result: result
+                  'type': 'app-mirror-transaction-result',
+                  'id': id,
+                  'result': result
                 });
               });
           break;
