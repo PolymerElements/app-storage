@@ -36,7 +36,7 @@
   self.addEventListener('message', function(event) {
     var data = event.data;
 
-    if (data && data.type === 'common-worker-connect') {
+    if (data && data['type'] === 'common-worker-connect') {
       var EventConstructor =
           self.CustomEvent ||
           self.Event ||
