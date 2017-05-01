@@ -13,7 +13,7 @@ thing! https://github.com/PolymerLabs/tedium/issues
 -->
 
 
-##Polymer.AppStorageBehavior
+## Polymer.AppStorageBehavior
 
 AppStorageBehavior is an abstract behavior that makes it easy to
 synchronize in-memory data and a persistant storage system, such as
@@ -26,7 +26,7 @@ elements see `<app-localstorage-document>` here, or check out
 
 
 
-##&lt;app-indexeddb-mirror&gt;
+## &lt;app-indexeddb-mirror&gt;
 
 `app-indexeddb-mirror` is a purpose-built element to easily add read-only
 offline access of application data that is typically only available when the
@@ -139,7 +139,7 @@ be available through this element.
 
 
 
-##&lt;app-localstorage-document&gt;
+## &lt;app-localstorage-document&gt;
 
 app-localstorage-document synchronizes storage between an in-memory
 value and a location in the browser's localStorage system.
@@ -168,10 +168,8 @@ Only supports storing JSON-serializable values.
 
 
 
-##Polymer.AppNetworkStatusBehavior
+## Polymer.AppNetworkStatusBehavior
 
 `Polymer.AppNetworkStatusBehavior` tracks the status of whether the browser
 is online or offline. True if the browser is online, and false if the browser is
 offline matching the HTML browser state spec.
-
-
