@@ -50,6 +50,10 @@
     // Maybe useful in case we want to notify clients of changes..
     this[CLIENT_PORTS] = new Array;
     this[DB_OPENS] = null;
+    this.supportsIndexedDB = self.indexedDB != null;
+    if (!self.Promise || !this.supportsIndexedDB) {
+      console.error('Indexeddb Mirror is not supported');
+    }
 
     this.openDb();
 
@@ -57,8 +61,6 @@
         'unhandledrejection', function(error){ console.error(error); });
     self.addEventListener(
         'error', function(error) { console.error(error); });
-
-    this.supportsIndexedDB = self.indexedDB != null;
     console.log('AppIndexedDBMirrorWorker started...');
   };
 
@@ -120,8 +122,12 @@
      * with the result of the transaction, or rejects if the transaction fails
      * with the error reported by the transaction.
      */
-    operateOnStore: function(operation, storeName, mode, operationArgs) {
-      operationArgs = Array.from(arguments).slice(3);
+    operateOnStore: function(operation, storeName, mode) {
+      if (!self.Promise || !this.supportsIndexedDB) {
+        return;
+      }
+
+      var operationArgs = Array.from(arguments).slice(3);
 
       return this.openDb().then(function(db) {
 

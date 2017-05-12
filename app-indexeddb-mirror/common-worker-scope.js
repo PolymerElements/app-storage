@@ -42,9 +42,10 @@
           self.Event ||
           // NOTE(cdata): Have mercy on my soul..
           event.__proto__.__proto__.constructor;
-      var connectEvent = new EventConstructor('connect');
 
+      var connectEvent = new EventConstructor('connect');
       connectEvent.ports = event.ports;
+
       self.dispatchEvent(connectEvent);
     }
   }.bind(this));
