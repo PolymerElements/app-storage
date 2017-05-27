@@ -24,7 +24,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     var BASE_URI = (function() {
       // Polymer 2 baseURI polyfill for IE and Safari
       if (Polymer.Element && window.HTMLImports && HTMLImports.importForElement) {
-        return HTMLImports.importForElement(document.currentScript).baseURI;
+        return HTMLImports.importForElement(
+            /** @type {!HTMLScriptElement} */(document.currentScript)).baseURI;
       }
       // Polymer 1 or no HTML Imports
       currentScript = document._currentScript ? document._currentScript :
