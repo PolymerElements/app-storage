@@ -398,10 +398,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               this.__initialized = true;
               this.__initializingStoredValue = null;
               this._groupEnd('Initializing stored value.');
-            }.bind(this)).catch((e) => {
+            }.bind(this)).catch(function(e) {
               this.__initializingStoredValue = null;
               this._groupEnd('Initializing stored value.');
-            });
+            }.bind(this));
 
         return this._enqueueTransaction(function() {
           return initializingStoredValue;
