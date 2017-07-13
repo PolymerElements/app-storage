@@ -58,5 +58,6 @@
   },
   "resolutions": {
     "webcomponentsjs": "^1.0.0"
-  }
+  },
+  "ignore": []
 }
