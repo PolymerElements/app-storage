@@ -29,7 +29,7 @@
     "paper-input": "polymerelements/paper-input#1 - 2",
     "paper-styles": "polymerelements/paper-styles#1 - 2",
     "promise-polyfill": "polymerlabs/promise-polyfill#1 - 2",
-    "web-component-tester": "^6.0.0",
+    "web-component-tester": "^4.0.0",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0"
   },
   "variants": {
