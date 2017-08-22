@@ -14,28 +14,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <title>app-localstorage tests</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 
-  <script>
-    window.addEventListener('WebComponentsReady', function() {
-      testAppStorageDocumentCompatibility({
-        tagName: 'app-localstorage-document',
-        fetchStoredValue: function(storagePath) {
-          var parts = storagePath.split('.');
-          var value = JSON.parse(localStorage.getItem('app-localstorage-test'));
+  <script type="module">
+import '../../../promise-polyfill/promise-polyfill.js';
+import '../app-storage-compatibility-suite.js';
+import '../../app-localstorage/app-localstorage-document.js';
+import { Base } from '../../../polymer/polymer.js';
+testAppStorageDocumentCompatibility({
+  tagName: 'app-localstorage-document',
+  fetchStoredValue: function(storagePath) {
+    var parts = storagePath.split('.');
+    var value = JSON.parse(localStorage.getItem('app-localstorage-test'));
 
-          parts.shift();
+    parts.shift();
 
-          return Promise.resolve(Polymer.Base.get(parts.join('.'), value));
-        }
-      });
-    })
-  </script>
+    return Promise.resolve(Base.get(parts.join('.'), value));
+  }
+});
+</script>
 
   <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
   <script src="../../../web-component-tester/browser.js"></script>
 
-  <link rel="import" href="../../../promise-polyfill/promise-polyfill.html">
-  <link rel="import" href="../app-storage-compatibility-suite.html">
-  <link rel="import" href="../../app-localstorage/app-localstorage-document.html">
+  <script type="module" src="../../../promise-polyfill/promise-polyfill.js"></script>
+  <script type="module" src="../app-storage-compatibility-suite.js"></script>
+  <script type="module" src="../../app-localstorage/app-localstorage-document.js"></script>
 </head>
 <body>
 
