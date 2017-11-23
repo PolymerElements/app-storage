@@ -18,7 +18,7 @@ thing! https://github.com/PolymerLabs/tedium/issues
 ## Polymer.AppStorageBehavior
 
 AppStorageBehavior is an abstract behavior that makes it easy to
-synchronize in-memory data and a persistant storage system, such as
+synchronize in-memory data and a persistent storage system, such as
 the browser's IndexedDB, or a remote database like Firebase.
 
 For examples of how to use this behavior to write your own app storage
