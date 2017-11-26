@@ -12,6 +12,7 @@ thing! https://github.com/PolymerLabs/tedium/issues
 
 -->
 ![status](https://travis-ci.org/PolymerElements/app-storage.svg?branch=2.0-preview)
+[![Published on webcomponents.org](https://img.shields.io/badge/webcomponents.org-published-blue.svg)](https://www.webcomponents.org/element/PolymerElements/app-storage)
 ## Changes in 2.0
 * Promise polyfill is no longer shipped with the element. It is now a dev dependency.
 
