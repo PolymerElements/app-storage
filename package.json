@@ -1,0 +1,6 @@
+{
+  "name": "@polymer/app-storage",
+  "private": true,
+  "description": "Web Components for managing user data in web apps",
+  "license": "BSD-3-Clause"
+}
