@@ -50,7 +50,7 @@ declare namespace Polymer {
      * Override this getter to return true if the value has never been
      * persisted to storage.
      */
-    readonly isNew: any;
+    readonly isNew: boolean;
 
     /**
      * A promise that will resolve once all queued transactions
@@ -62,7 +62,7 @@ declare namespace Polymer {
      *
      * This promise never rejects.
      */
-    readonly transactionsComplete: any;
+    readonly transactionsComplete: Promise<any>|null;
 
     /**
      * Override this getter to define the default value to use when
