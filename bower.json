@@ -56,5 +56,6 @@
   "resolutions": {
     "webcomponentsjs": "^1.0.0"
   },
-  "ignore": []
+  "ignore": [],
+  "version": "2.1.0"
 }
