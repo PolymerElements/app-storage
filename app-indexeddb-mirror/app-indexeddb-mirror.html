@@ -129,6 +129,15 @@ be available through this element.
     (function() {
       'use strict';
 
+      // NOTE(cdata): see http://www.2ality.com/2014/05/current-script.html
+      var __currentScript = document._currentScript || document.currentScript ||
+          (function() {
+            var scripts = document.getElementsByTagName('script');
+            return scripts[scripts.length - 1];
+          })();
+
+      var IS_JS_MODULE = __currentScript.getAttribute('type') === 'module';
+
       Polymer({
         is: 'app-indexeddb-mirror',
 
@@ -235,6 +244,10 @@ be available through this element.
         },
 
         __computeClient: function(workerUrl) {
+          if (IS_JS_MODULE) {
+            return new Polymer.AppIndexedDBMirrorClient(workerUrl, this.importPath);
+          }
+
           return new Polymer.AppIndexedDBMirrorClient(workerUrl);
         },
 
