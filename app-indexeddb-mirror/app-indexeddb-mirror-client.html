@@ -153,7 +153,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         console.log('App IndexedDB Client connecting..');
 
         return this[CONNECTS_TO_WORKER] = new Promise(function(resolve) {
-          debugger;
           var worker = new Polymer.CommonWorker(this[WORKER_URL], baseUri);
 
           worker.port.addEventListener('message', function(event) {

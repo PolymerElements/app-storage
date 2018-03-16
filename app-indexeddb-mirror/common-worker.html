@@ -19,11 +19,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     var baseUriCurrentScript;
     var workerScopeUrl;
 
+    // Polymer 1 and no HTML Imports
     if (currentScript) {
-      baseUriCurrentScript = (function() {
-        // Polymer 1 and no HTML Imports
-        return currentScript.ownerDocument.baseURI;
-      })();
+      baseUriCurrentScript = currentScript.ownerDocument.baseURI;
     }
 
     /**
