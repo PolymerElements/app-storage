@@ -17,16 +17,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     // NOTE(cdata): see http://www.2ality.com/2014/05/current-script.html
     // Use case only for Polymer 1
     var currentScript = document._currentScript || document.currentScript;
+    var baseUriCurrentScript;
+    var workerScopeUrl;
 
-    var BASE_URI = (function() {
-      // Polymer 1 and no HTML Imports
-      currentScript = document._currentScript ? document._currentScript :
-          document.currentScript;
-      return currentScript.ownerDocument.baseURI;
-    })();
-
-    var WORKER_SCOPE_CURRENT_SCRIPT =
-        Polymer.ResolveUrl.resolveUrl('common-worker-scope.js', BASE_URI);
+    if (currentScript) {
+      baseUriCurrentScript = (function() {
+        // Polymer 1 and no HTML Imports
+        return currentScript.ownerDocument.baseURI;
+      })();
+    }
 
     /**
      * A proxy class for creating `SharedWorker` if available. If not available,
@@ -56,7 +55,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         if (!WEB_WORKERS.hasOwnProperty(workerUrl)) {
           if (!workerScopeUrl) {
             if (typeof baseUri !== 'string') {
-              baseUri = WORKER_SCOPE_CURRENT_SCRIPT;
+              baseUri = baseUriCurrentScript;
             }
 
             workerScopeUrl =
