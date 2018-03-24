@@ -27,18 +27,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      *
      * @param {string} _workerUrl The URL to use when initializing the
      * corresponding WebWorker.
+     * @param {string=} baseUri The base uri of app-storage/app-indexeddb-mirror
      *
      * @constructor
      */
     Polymer.AppIndexedDBMirrorClient =
-        function AppIndexedDBMirrorClient(_workerUrl) {
+        function AppIndexedDBMirrorClient(_workerUrl, baseUri) {
       this[WORKER_URL] = _workerUrl;
       this[CONNECTED] = false;
       this[MESSAGE_ID] = 0;
       this[CONNECTS_TO_WORKER] = null;
       this[SUPPORTS_MIRRORING] = null;
 
-      this.connect();
+      this.connect(baseUri);
     };
 
     Polymer.AppIndexedDBMirrorClient.prototype = {
@@ -139,11 +140,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * Instantiates (if necessary) and connects to the backing worker
        * instance.
        *
+       * @param {string=} baseUri The base uri of app-storage/app-indexeddb-mirror
        * @return {Promise} A promise that resolves when the worker has been
        * created and a handshake has been returned. The worker is an instance
        * of `SharedWorker` (if available), or else `Polymer.CommonWorker`.
        */
-      connect: function() {
+      connect: function(baseUri) {
         if (this[CONNECTED] || this[CONNECTS_TO_WORKER]) {
           return this[CONNECTS_TO_WORKER];
         }
@@ -151,7 +153,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         console.log('App IndexedDB Client connecting..');
 
         return this[CONNECTS_TO_WORKER] = new Promise(function(resolve) {
-          var worker = new Polymer.CommonWorker(this[WORKER_URL]);
+          var worker = new Polymer.CommonWorker(this[WORKER_URL], baseUri);
 
           worker.port.addEventListener('message', function(event) {
             if (event.data &&

@@ -235,6 +235,10 @@ be available through this element.
         },
 
         __computeClient: function(workerUrl) {
+          if (this.importPath) {
+            return new Polymer.AppIndexedDBMirrorClient(workerUrl, this.importPath);
+          }
+
           return new Polymer.AppIndexedDBMirrorClient(workerUrl);
         },
 

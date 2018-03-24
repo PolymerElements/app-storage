@@ -14,27 +14,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     var WEB_WORKERS = {};
     var HAS_SHARED_WORKER = typeof SharedWorker !== 'undefined';
     var HAS_WEB_WORKER = typeof Worker !== 'undefined';
-    // NOTE(cdata): see http://www.2ality.com/2014/05/current-script.html
-    var currentScript = document._currentScript || document.currentScript ||
-        (function() {
-          var scripts = document.getElementsByTagName('script');
-          return scripts[scripts.length - 1];
-        })();
+    // Use case only for Polymer 1
+    var currentScript = document._currentScript || document.currentScript;
+    var baseUriCurrentScript;
+    var workerScopeUrl;
 
-    var BASE_URI = (function() {
-      // Polymer 2 baseURI polyfill for IE and Safari
-      if (Polymer.Element && window.HTMLImports && HTMLImports.importForElement) {
-        return HTMLImports.importForElement(
-            /** @type {!HTMLScriptElement} */(document.currentScript)).baseURI;
-      }
-      // Polymer 1 or no HTML Imports
-      currentScript = document._currentScript ? document._currentScript :
-          document.currentScript;
-      return currentScript.ownerDocument.baseURI;
-    })();
-
-    var WORKER_SCOPE_URL =
-        Polymer.ResolveUrl.resolveUrl('common-worker-scope.js', BASE_URI);
+    // Polymer 1 and no HTML Imports
+    if (currentScript) {
+      baseUriCurrentScript = currentScript.ownerDocument.baseURI;
+    }
 
     /**
      * A proxy class for creating `SharedWorker` if available. If not available,
@@ -52,17 +40,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      *
      * @param {string} workerUrl The URL of the worker script to create a worker
      * instance with.
+     * @param {string=} baseUri The base uri of app-storage/app-indexeddb-mirror
      *
      * @constructor
      */
-    Polymer.CommonWorker = function CommonWorker (workerUrl) {
+    Polymer.CommonWorker = function CommonWorker(workerUrl, baseUri) {
       if (HAS_SHARED_WORKER) {
         return new SharedWorker(workerUrl);
 
       } else if (HAS_WEB_WORKER) {
         if (!WEB_WORKERS.hasOwnProperty(workerUrl)) {
+          if (!workerScopeUrl) {
+            if (typeof baseUri !== 'string') {
+              baseUri = baseUriCurrentScript;
+            }
+
+            workerScopeUrl =
+              Polymer.ResolveUrl.resolveUrl('common-worker-scope.js', baseUri);
+          }
+
           WEB_WORKERS[workerUrl] =
-              new Worker(WORKER_SCOPE_URL + '?' + workerUrl);
+              new Worker(workerScopeUrl + '?' + workerUrl);
         }
 
       } else {
