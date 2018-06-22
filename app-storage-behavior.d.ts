@@ -27,7 +27,7 @@ declare namespace Polymer {
     /**
      * The data to synchronize.
      */
-    data: object|null|undefined;
+    data: any;
 
     /**
      * If this is true transactions will happen one after the other,

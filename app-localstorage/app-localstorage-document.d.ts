@@ -36,6 +36,7 @@
  * Only supports storing JSON-serializable values.
  */
 interface AppLocalstorageDocumentElement extends Polymer.Element, Polymer.AppStorageBehavior {
+  data: object|null|undefined;
   readonly isNew: any;
 
   /**

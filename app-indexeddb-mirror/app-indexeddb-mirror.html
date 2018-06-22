@@ -136,6 +136,13 @@ be available through this element.
 
       properties: {
         /**
+         * @type {Object|undefined}
+         */
+        data: {
+          // needed for proper closure types
+          type: Object
+        },
+        /**
          * The key against which to persist data in the IndexedDB database.
          * This key uniquely maps to a key in an IndexedDB object store, so
          * any instances of `app-indexeddb-mirror` with the same `key` will
@@ -184,6 +191,8 @@ be available through this element.
          *
          * When offline, this property is a read-only copy of the `data` that
          * has been stored in the IndexedDB database at `key`.
+         *
+         * @type {Object|undefined}
          */
         persistedData: {type: Object, notify: true}
       },

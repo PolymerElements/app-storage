@@ -44,9 +44,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       properties: {
         /**
+         * @type {Object|undefined}
+         */
+        data: {
+          // needed for proper closure types
+          type: Object
+        },
+        /**
          * Defines the logical location to store the data.
          *
-         * @type{String}
+         * @type {String}
          */
         key: {type: String, notify: true},
 

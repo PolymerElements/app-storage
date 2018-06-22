@@ -32,6 +32,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     properties: {
       /**
        * The data to synchronize.
+       * @type {*}
        */
       data: {
         type: Object,
@@ -102,7 +103,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      * Override this getter to define the default value to use when
      * there's no data stored.
      *
-     * @return {*}
+     * @return {?}
      */
     get zeroValue() {
       return undefined;

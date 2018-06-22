@@ -124,6 +124,7 @@
  * be available through this element.
  */
 interface AppIndexeddbMirrorElement extends Polymer.Element, Polymer.AppStorageBehavior, Polymer.AppNetworkStatusBehavior {
+  data: object|null|undefined;
   readonly isNew: any;
 
   /**
