@@ -134,6 +134,8 @@ Polymer({
 
   behaviors: [AppStorageBehavior, AppNetworkStatusBehavior],
 
+  importMeta: import.meta,
+
   properties: {
     /**
      * The key against which to persist data in the IndexedDB database.
