@@ -1,13 +1,14 @@
 /**
 @license
 Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
-The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+This code may only be used under the BSD style license found at
+http://polymer.github.io/LICENSE.txt The complete set of authors may be found at
+http://polymer.github.io/AUTHORS.txt The complete set of contributors may be
+found at http://polymer.github.io/CONTRIBUTORS.txt Code distributed by Google as
+part of the polymer project is also subject to an additional IP rights grant
+found at http://polymer.github.io/PATENTS.txt
 */
-import { resolveUrl } from '@polymer/polymer/lib/utils/resolve-url.js';
+import {resolveUrl} from '@polymer/polymer/lib/utils/resolve-url.js';
 
 var WEB_WORKERS = {};
 var HAS_SHARED_WORKER = typeof SharedWorker !== 'undefined';
@@ -43,75 +44,74 @@ if (currentScript) {
  * @constructor
  */
 export const CommonWorker = function CommonWorker(workerUrl, baseUri) {
-if (HAS_SHARED_WORKER) {
-return new SharedWorker(workerUrl);
+  if (HAS_SHARED_WORKER) {
+    return new SharedWorker(workerUrl);
 
-} else if (HAS_WEB_WORKER) {
-if (!WEB_WORKERS.hasOwnProperty(workerUrl)) {
-  if (!workerScopeUrl) {
-    if (typeof baseUri !== 'string') {
-      baseUri = baseUriCurrentScript;
+  } else if (HAS_WEB_WORKER) {
+    if (!WEB_WORKERS.hasOwnProperty(workerUrl)) {
+      if (!workerScopeUrl) {
+        if (typeof baseUri !== 'string') {
+          baseUri = baseUriCurrentScript;
+        }
+
+        workerScopeUrl = resolveUrl('common-worker-scope.js', baseUri);
+      }
+
+      WEB_WORKERS[workerUrl] = new Worker(workerScopeUrl + '?' + workerUrl);
     }
 
-    workerScopeUrl =
-        resolveUrl('common-worker-scope.js', baseUri);
+  } else {
+    console.error(
+        'This browser does not support SharedWorker or' +
+        'WebWorker, but at least one of those two features is required for' +
+        'CommonWorker to do its thing.');
   }
 
-  WEB_WORKERS[workerUrl] = new Worker(workerScopeUrl + '?' + workerUrl);
-}
+  this.channel = new MessageChannel();
+  this.webWorker = WEB_WORKERS[workerUrl];
 
-} else {
-console.error(
-    'This browser does not support SharedWorker or' +
-    'WebWorker, but at least one of those two features is required for' +
-    'CommonWorker to do its thing.');
-}
-
-this.channel = new MessageChannel();
-this.webWorker = WEB_WORKERS[workerUrl];
-
-if (this.webWorker) {
-this.webWorker.postMessage(
-    {'type': 'common-worker-connect'}, [this.channel.port2]);
-}
+  if (this.webWorker) {
+    this.webWorker.postMessage(
+        {'type': 'common-worker-connect'}, [this.channel.port2]);
+  }
 };
 
 CommonWorker.prototype = {
 
-/**
-* @type {MessagePort} A port that is unique to each instance of
-* CommonWorker. Messages posted to this port can be received inside of
-* the worker instance.
-*/
-get port() {
-return this.channel.port1;
-},
+  /**
+   * @type {MessagePort} A port that is unique to each instance of
+   * CommonWorker. Messages posted to this port can be received inside of
+   * the worker instance.
+   */
+  get port() {
+    return this.channel.port1;
+  },
 
-/**
-* A proxy method that forwards all calls to the backing `WebWorker`
-* instance.
-*
-* @param {String|string|undefined} eventType The event to listen for
-* @param {Function} listenerFunction The function to be attached to the event
-* @param {Object=} options addEventListener Options object
-*/
-addEventListener: function(eventType, listenerFunction, options) {
-if (this.webWorker) {
-  return this.webWorker.addEventListener.apply(this.webWorker, arguments);
-}
-},
+  /**
+   * A proxy method that forwards all calls to the backing `WebWorker`
+   * instance.
+   *
+   * @param {String|string|undefined} eventType The event to listen for
+   * @param {Function} listenerFunction The function to be attached to the event
+   * @param {Object=} options addEventListener Options object
+   */
+  addEventListener: function(eventType, listenerFunction, options) {
+    if (this.webWorker) {
+      return this.webWorker.addEventListener.apply(this.webWorker, arguments);
+    }
+  },
 
-/**
-* A proxy method that forwards all calls to the backing `WebWorker`
-* instance.
-*
-* @param {...*} removeEventListenerArgs The arguments to call the same
-* method on the `WebWorker` with.
-*/
-removeEventListener: function(removeEventListenerArgs) {
-if (this.webWorker) {
-  return this.webWorker.removeEventListener.apply(
-      this.webWorker, arguments);
-}
-}
+  /**
+   * A proxy method that forwards all calls to the backing `WebWorker`
+   * instance.
+   *
+   * @param {...*} removeEventListenerArgs The arguments to call the same
+   * method on the `WebWorker` with.
+   */
+  removeEventListener: function(removeEventListenerArgs) {
+    if (this.webWorker) {
+      return this.webWorker.removeEventListener.apply(
+          this.webWorker, arguments);
+    }
+  }
 };

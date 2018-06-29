@@ -48,168 +48,168 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </test-fixture>
 
   <script type="module">
-import '../../app-indexeddb-mirror/app-indexeddb-mirror.js';
-var dbVersion = 2;
+    import '../../app-indexeddb-mirror/app-indexeddb-mirror.js';
+    var dbVersion = 2;
 
-function getPersistedValue(key) {
-  return appStorageTestHelpers.getIdbObjectStoreValue(
-      'app-mirror', dbVersion, 'mirrored_data', key);
-}
+    function getPersistedValue(key) {
+      return appStorageTestHelpers.getIdbObjectStoreValue(
+          'app-mirror', dbVersion, 'mirrored_data', key);
+    }
 
-function setPersistedValue(key, value) {
-  return appStorageTestHelpers.setIdbObjectStoreValue(
-      'app-mirror', dbVersion, 'mirrored_data', key, value);
-}
+    function setPersistedValue(key, value) {
+      return appStorageTestHelpers.setIdbObjectStoreValue(
+          'app-mirror', dbVersion, 'mirrored_data', key, value);
+    }
 
-function expectPersistedValue(key, value) {
-  return getPersistedValue(key).then(function(persistedValue) {
-    expect(persistedValue).to.be.deep.equal(value);
-  });
-}
+    function expectPersistedValue(key, value) {
+      return getPersistedValue(key).then(function(persistedValue) {
+        expect(persistedValue).to.be.deep.equal(value);
+      });
+    }
 
-suite('<app-indexeddb-mirror>', function() {
-  // skips tests due to async bug in mocha
-  this.ctx.skip = function() {
-    this.pending = true;
-  }.bind(this);
+    suite('<app-indexeddb-mirror>', function() {
+      // skips tests due to async bug in mocha
+      this.ctx.skip = function() {
+        this.pending = true;
+      }.bind(this);
 
-  setup(function(done) {
-    var featureDetect = new Worker('../feature-detect.js');
+      setup(function(done) {
+        var featureDetect = new Worker('../feature-detect.js');
 
-    var timeout = window.setTimeout(function() {
-      this.skip();
-    }.bind(this), 3000);
+        var timeout = window.setTimeout(function() {
+          this.skip();
+        }.bind(this), 3000);
 
-    featureDetect.onmessage = function(e) {
-      window.clearTimeout(timeout);
-      var error;
-      if (e.data !== 'pass') {
-        this.skip();
-      }
-      done();
-    }.bind(this);
+        featureDetect.onmessage = function(e) {
+          window.clearTimeout(timeout);
+          var error;
+          if (e.data !== 'pass') {
+            this.skip();
+          }
+          done();
+        }.bind(this);
 
-    featureDetect.postMessage('featureDetect');
-  });
+        featureDetect.postMessage('featureDetect');
+      });
 
-  teardown(function() {
-    appStorageTestHelpers.restoreNavigatorOnLine();
-    return appStorageTestHelpers.deleteIdbDatabase('app-mirror');
-  });
+      teardown(function() {
+        appStorageTestHelpers.restoreNavigatorOnLine();
+        return appStorageTestHelpers.deleteIdbDatabase('app-mirror');
+      });
 
-  suite('basic mirroring', function() {
-    var mirror;
+      suite('basic mirroring', function() {
+        var mirror;
 
-    setup(function() {
-      mirror = fixture('BasicMirror');
-      return mirror.transactionsComplete;
-    });
-
-    teardown(function() {
-      return mirror.client.closeDb()
-    });
-
-    suite('when online', function() {
-      test('mirrors data into IndexedDB', function() {
-        if (!mirror.client.supportsMirroring) {
-          return;
-        }
-
-        mirror.data = {foo: 'bar'};
-
-        return mirror.transactionsComplete.then(function() {
-          return expectPersistedValue(mirror.key, mirror.data);
+        setup(function() {
+          mirror = fixture('BasicMirror');
+          return mirror.transactionsComplete;
         });
-      });
 
-      test('passes changes to persistedData through to data', function() {
-        if (!mirror.client.supportsMirroring) {
-          return;
-        }
-
-        mirror.data = {foo: 'bar'};
-
-        expect(mirror.persistedData).to.be.deep.equal(mirror.data);
-
-        mirror.set('persistedData.foo', 'baz');
-
-        expect(mirror.data).to.be.deep.equal(mirror.persistedData);
-
-        return mirror.transactionsComplete.then(function() {
-          return expectPersistedValue(mirror.key, mirror.data);
+        teardown(function() {
+          return mirror.client.closeDb()
         });
-      });
-    });
 
-    suite('when session is set lazily', function() {
-      var secondMirror;
+        suite('when online', function() {
+          test('mirrors data into IndexedDB', function() {
+            if (!mirror.client.supportsMirroring) {
+              return;
+            }
 
-      setup(function() {
-        mirror.data = {foo: 'bar'};
-        secondMirror = fixture('NoSessionMirror');
-        return Promise.all(
-            [mirror.transactionsComplete, secondMirror.transactionsComplete]);
-      });
+            mirror.data = {foo: 'bar'};
 
-      test('the data is preserved', function() {
-        if (!mirror.client.supportsMirroring) {
-          return;
-        }
-
-        secondMirror.session = 'test';
-        return secondMirror.transactionsComplete.then(function() {
-          return expectPersistedValue('basic-mirror', mirror.data);
-        });
-      });
-    });
-
-    suite('when offline', function() {
-      test('boots up with persisted value', function() {
-        if (!mirror.client.supportsMirroring) {
-          return;
-        }
-
-        var persistedValue = {foo: 'bar'};
-        var secondMirror;
-
-        mirror.data = persistedValue;
-
-        return mirror.transactionsComplete
-            .then(function() {
-              appStorageTestHelpers.goOffline();
-              secondMirror = fixture('SecondMirror');
-              return secondMirror.transactionsComplete;
-            })
-            .then(function() {
-              expect(secondMirror.persistedData)
-                  .to.be.deep.equal(persistedValue);
+            return mirror.transactionsComplete.then(function() {
+              return expectPersistedValue(mirror.key, mirror.data);
             });
-      });
+          });
 
-      test('sets persistedData to value in IDB', function() {
-        if (!mirror.client.supportsMirroring) {
-          return;
-        }
+          test('passes changes to persistedData through to data', function() {
+            if (!mirror.client.supportsMirroring) {
+              return;
+            }
 
-        mirror.data = {foo: 'bar'};
+            mirror.data = {foo: 'bar'};
 
-        var persistedValue = {foo: 'baz'};
+            expect(mirror.persistedData).to.be.deep.equal(mirror.data);
 
-        return mirror.transactionsComplete
-            .then(function() {
-              return setPersistedValue(mirror.key, persistedValue);
-            })
-            .then(function() {
-              appStorageTestHelpers.goOffline();
-              return mirror.transactionsComplete;
-            })
-            .then(function() {
-              expect(mirror.persistedData).to.be.deep.equal(persistedValue);
+            mirror.set('persistedData.foo', 'baz');
+
+            expect(mirror.data).to.be.deep.equal(mirror.persistedData);
+
+            return mirror.transactionsComplete.then(function() {
+              return expectPersistedValue(mirror.key, mirror.data);
             });
+          });
+        });
+
+        suite('when session is set lazily', function() {
+          var secondMirror;
+
+          setup(function() {
+            mirror.data = {foo: 'bar'};
+            secondMirror = fixture('NoSessionMirror');
+            return Promise.all(
+                [mirror.transactionsComplete, secondMirror.transactionsComplete]);
+          });
+
+          test('the data is preserved', function() {
+            if (!mirror.client.supportsMirroring) {
+              return;
+            }
+
+            secondMirror.session = 'test';
+            return secondMirror.transactionsComplete.then(function() {
+              return expectPersistedValue('basic-mirror', mirror.data);
+            });
+          });
+        });
+
+        suite('when offline', function() {
+          test('boots up with persisted value', function() {
+            if (!mirror.client.supportsMirroring) {
+              return;
+            }
+
+            var persistedValue = {foo: 'bar'};
+            var secondMirror;
+
+            mirror.data = persistedValue;
+
+            return mirror.transactionsComplete
+                .then(function() {
+                  appStorageTestHelpers.goOffline();
+                  secondMirror = fixture('SecondMirror');
+                  return secondMirror.transactionsComplete;
+                })
+                .then(function() {
+                  expect(secondMirror.persistedData)
+                      .to.be.deep.equal(persistedValue);
+                });
+          });
+
+          test('sets persistedData to value in IDB', function() {
+            if (!mirror.client.supportsMirroring) {
+              return;
+            }
+
+            mirror.data = {foo: 'bar'};
+
+            var persistedValue = {foo: 'baz'};
+
+            return mirror.transactionsComplete
+                .then(function() {
+                  return setPersistedValue(mirror.key, persistedValue);
+                })
+                .then(function() {
+                  appStorageTestHelpers.goOffline();
+                  return mirror.transactionsComplete;
+                })
+                .then(function() {
+                  expect(mirror.persistedData).to.be.deep.equal(persistedValue);
+                });
+          });
+        });
       });
     });
-  });
-});
-</script>
+  </script>
 </body>
 </html>
