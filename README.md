@@ -7,6 +7,8 @@
 These are a set of behaviors and elements that make it easy to synchronize
 in-memory data to persistant storage systems.
 
+See: [Documentation](https://www.webcomponents.org/element/@polymer/app-storage),
+
 ### AppStorageBehavior
 
 `AppStorageBehavior` is an abstract behavior that makes it easy to
