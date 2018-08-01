@@ -13,7 +13,6 @@
     "@polymer/paper-fab": "^3.0.0-pre.20",
     "@polymer/paper-input": "^3.0.0-pre.20",
     "@polymer/paper-styles": "^3.0.0-pre.20",
-    "@polymer/promise-polyfill": "^3.0.0-pre.20",
     "wct-browser-legacy": "^1.0.1",
     "@webcomponents/webcomponentsjs": "^2.0.0"
   },
