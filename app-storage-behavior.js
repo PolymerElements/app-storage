@@ -334,36 +334,36 @@ export const AppStorageBehavior = {
   /**
    * A wrapper around `console.log`.
    */
-  _log: function() {
+  _log: function(...args) {
     if (this.log) {
-      console.log.apply(console, arguments);
+      console.log.apply(console, args);
     }
   },
 
   /**
    * A wrapper around `console.error`.
    */
-  _error: function() {
+  _error: function(...args) {
     if (this.log) {
-      console.error.apply(console, arguments);
+      console.error.apply(console, args);
     }
   },
 
   /**
    * A wrapper around `console.group`.
    */
-  _group: function() {
+  _group: function(...args) {
     if (this.log) {
-      console.group.apply(console, arguments);
+      console.group.apply(console, args);
     }
   },
 
   /**
    * A wrapper around `console.groupEnd`.
    */
-  _groupEnd: function() {
+  _groupEnd: function(...args) {
     if (this.log) {
-      console.groupEnd.apply(console, arguments);
+      console.groupEnd.apply(console, args);
     }
   },
 
