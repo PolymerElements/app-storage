@@ -74,42 +74,42 @@ export class CommonWorker {
       this.webWorker.postMessage(
           {'type': 'common-worker-connect'}, [this.channel.port2]);
     }
+  }
 
-    /**
-     * @type {MessagePort} A port that is unique to each instance of
-     * CommonWorker. Messages posted to this port can be received inside of
-     * the worker instance.
-     */
-    get port() {
-      return this.channel.port1;
+  /**
+   * @type {MessagePort} A port that is unique to each instance of
+   * CommonWorker. Messages posted to this port can be received inside of
+   * the worker instance.
+   */
+  get port() {
+    return this.channel.port1;
+  }
+
+  /**
+   * A proxy method that forwards all calls to the backing `WebWorker`
+   * instance.
+   *
+   * @param {String|string|undefined} eventType The event to listen for
+   * @param {Function} listenerFunction The function to be attached to the event
+   * @param {Object=} options addEventListener Options object
+   */
+  addEventListener(eventType, listenerFunction, options) {
+    if (this.webWorker) {
+      return this.webWorker.addEventListener.apply(this.webWorker, arguments);
     }
+  }
 
-    /**
-     * A proxy method that forwards all calls to the backing `WebWorker`
-     * instance.
-     *
-     * @param {String|string|undefined} eventType The event to listen for
-     * @param {Function} listenerFunction The function to be attached to the event
-     * @param {Object=} options addEventListener Options object
-     */
-    addEventListener(eventType, listenerFunction, options) {
-      if (this.webWorker) {
-        return this.webWorker.addEventListener.apply(this.webWorker, arguments);
-      }
-    }
-
-    /**
-     * A proxy method that forwards all calls to the backing `WebWorker`
-     * instance.
-     *
-     * @param {...*} removeEventListenerArgs The arguments to call the same
-     * method on the `WebWorker` with.
-     */
-    removeEventListener(removeEventListenerArgs) {
-      if (this.webWorker) {
-        return this.webWorker.removeEventListener.apply(
-            this.webWorker, arguments);
-      }
+  /**
+   * A proxy method that forwards all calls to the backing `WebWorker`
+   * instance.
+   *
+   * @param {...*} removeEventListenerArgs The arguments to call the same
+   * method on the `WebWorker` with.
+   */
+  removeEventListener(removeEventListenerArgs) {
+    if (this.webWorker) {
+      return this.webWorker.removeEventListener.apply(
+          this.webWorker, arguments);
     }
   }
 };
