@@ -162,4 +162,4 @@ export class AppIndexedDBMirrorClient {
              worker.port.postMessage({'type': 'app-mirror-connect'});
            }.bind(this));
   }
-}
+};
