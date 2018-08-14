@@ -21,29 +21,26 @@ var worker = null;
  * Class that implements a client for initializing and negotiating
  * transactions with a worker containing an instance of
  * `AppIndexedDBMirrorWorker`.
- *
- * @param {string} _workerUrl The URL to use when initializing the
- * corresponding WebWorker.
- * @param {string=} baseUri The base uri of app-storage/app-indexeddb-mirror
- *
- * @constructor
  */
-export const AppIndexedDBMirrorClient = function AppIndexedDBMirrorClient(
-    _workerUrl, baseUri) {
-  this[WORKER_URL] = _workerUrl;
-  this[CONNECTED] = false;
-  this[MESSAGE_ID] = 0;
-  this[CONNECTS_TO_WORKER] = null;
-  this[SUPPORTS_MIRRORING] = null;
+export class AppIndexedDBMirrorClient {
+  /**
+   * @param {string} _workerUrl The URL to use when initializing the
+   * corresponding WebWorker.
+   * @param {string=} baseUri The base uri of app-storage/app-indexeddb-mirror
+   */
+  constructor(_workerUrl, baseUri) {
+    this[WORKER_URL] = _workerUrl;
+    this[CONNECTED] = false;
+    this[MESSAGE_ID] = 0;
+    this[CONNECTS_TO_WORKER] = null;
+    this[SUPPORTS_MIRRORING] = null;
 
-  this.connect(baseUri);
-};
-
-AppIndexedDBMirrorClient.prototype = {
+    this.connect(baseUri);
+  }
 
   get supportsMirroring() {
     return this[SUPPORTS_MIRRORING];
-  },
+  }
 
   /**
    * Requests that the worker validate the current session against the
@@ -56,7 +53,7 @@ AppIndexedDBMirrorClient.prototype = {
    * @return {Promise|undefined} A promise that resolves when the worker confirms that
    * the session has been validated.
    */
-  validateSession: function(session) {
+  validateSession(session) {
     if (session === undefined) {
       // Ignore session `undefined` conventionally, as it means the session
       // (such as the user ID) has not been initialized yet.
@@ -64,7 +61,7 @@ AppIndexedDBMirrorClient.prototype = {
     }
 
     return this.post({type: 'app-mirror-validate-session', session: session});
-  },
+  }
 
   /**
    * Sends a message to the worker and awaits and handles a corresponding
@@ -77,7 +74,7 @@ AppIndexedDBMirrorClient.prototype = {
    * unique ID, so the first worker response that echos this ID will be
    * used to resolve the promise.
    */
-  post: function(message) {
+  post(message) {
     return this.connect().then(function(worker) {
       if (!this[SUPPORTS_MIRRORING]) {
         return Promise.resolve({});
@@ -99,7 +96,7 @@ AppIndexedDBMirrorClient.prototype = {
         port.postMessage(message);
       }.bind(this));
     }.bind(this));
-  },
+  }
 
   /**
    * Requests that the worker perform a transaction (supported verbs are
@@ -115,18 +112,18 @@ AppIndexedDBMirrorClient.prototype = {
    * @return {Promise} A promise that resolves when the worker indicates
    * that the transaction has completed.
    */
-  transaction: function(method, key, value) {
+  transaction(method, key, value) {
     return this.post({
       type: 'app-mirror-transaction',
       method: method,
       key: key,
       value: value
     });
-  },
+  }
 
-  closeDb: function() {
+  closeDb() {
     return this.post({type: 'app-mirror-close-db'});
-  },
+  }
 
   /**
    * Instantiates (if necessary) and connects to the backing worker
@@ -137,7 +134,7 @@ AppIndexedDBMirrorClient.prototype = {
    * created and a handshake has been returned. The worker is an instance
    * of `SharedWorker` (if available), or else `Polymer.CommonWorker`.
    */
-  connect: function(baseUri) {
+  connect(baseUri) {
     if (this[CONNECTED] || this[CONNECTS_TO_WORKER]) {
       return this[CONNECTS_TO_WORKER];
     }
