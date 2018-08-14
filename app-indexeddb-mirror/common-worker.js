@@ -36,47 +36,45 @@ if (currentScript) {
  *
  * `WebWorker` instances can listen for a global `connect` event that is
  * semantically similar to the spec'd `connect` event in a `SharedWorker`.
- *
- * @param {string} workerUrl The URL of the worker script to create a worker
- * instance with.
- * @param {string=} baseUri The base uri of app-storage/app-indexeddb-mirror
- *
- * @constructor
  */
-export const CommonWorker = function CommonWorker(workerUrl, baseUri) {
-  if (HAS_SHARED_WORKER) {
-    return new SharedWorker(workerUrl);
+export class CommonWorker {
+  /**
+   * @param {string} workerUrl The URL of the worker script to create a worker
+   * instance with.
+   * @param {string=} baseUri The base uri of app-storage/app-indexeddb-mirror
+   */
+  constructor(workerUrl, baseUri) {
+    if (HAS_SHARED_WORKER) {
+      return new SharedWorker(workerUrl);
 
-  } else if (HAS_WEB_WORKER) {
-    if (!WEB_WORKERS.hasOwnProperty(workerUrl)) {
-      if (!workerScopeUrl) {
-        if (typeof baseUri !== 'string') {
-          baseUri = baseUriCurrentScript;
+    } else if (HAS_WEB_WORKER) {
+      if (!WEB_WORKERS.hasOwnProperty(workerUrl)) {
+        if (!workerScopeUrl) {
+          if (typeof baseUri !== 'string') {
+            baseUri = baseUriCurrentScript;
+          }
+
+          workerScopeUrl = resolveUrl('common-worker-scope.js', baseUri);
         }
 
-        workerScopeUrl = resolveUrl('common-worker-scope.js', baseUri);
+        WEB_WORKERS[workerUrl] = new Worker(workerScopeUrl + '?' + workerUrl);
       }
 
-      WEB_WORKERS[workerUrl] = new Worker(workerScopeUrl + '?' + workerUrl);
+    } else {
+      console.error(
+          'This browser does not support SharedWorker or' +
+          'WebWorker, but at least one of those two features is required for' +
+          'CommonWorker to do its thing.');
     }
 
-  } else {
-    console.error(
-        'This browser does not support SharedWorker or' +
-        'WebWorker, but at least one of those two features is required for' +
-        'CommonWorker to do its thing.');
+    this.channel = new MessageChannel();
+    this.webWorker = WEB_WORKERS[workerUrl];
+
+    if (this.webWorker) {
+      this.webWorker.postMessage(
+          {'type': 'common-worker-connect'}, [this.channel.port2]);
+    }
   }
-
-  this.channel = new MessageChannel();
-  this.webWorker = WEB_WORKERS[workerUrl];
-
-  if (this.webWorker) {
-    this.webWorker.postMessage(
-        {'type': 'common-worker-connect'}, [this.channel.port2]);
-  }
-};
-
-CommonWorker.prototype = {
 
   /**
    * @type {MessagePort} A port that is unique to each instance of
@@ -85,7 +83,7 @@ CommonWorker.prototype = {
    */
   get port() {
     return this.channel.port1;
-  },
+  }
 
   /**
    * A proxy method that forwards all calls to the backing `WebWorker`
@@ -95,11 +93,11 @@ CommonWorker.prototype = {
    * @param {Function} listenerFunction The function to be attached to the event
    * @param {Object=} options addEventListener Options object
    */
-  addEventListener: function(eventType, listenerFunction, options) {
+  addEventListener(eventType, listenerFunction, options) {
     if (this.webWorker) {
       return this.webWorker.addEventListener.apply(this.webWorker, arguments);
     }
-  },
+  }
 
   /**
    * A proxy method that forwards all calls to the backing `WebWorker`
@@ -108,7 +106,7 @@ CommonWorker.prototype = {
    * @param {...*} removeEventListenerArgs The arguments to call the same
    * method on the `WebWorker` with.
    */
-  removeEventListener: function(removeEventListenerArgs) {
+  removeEventListener(removeEventListenerArgs) {
     if (this.webWorker) {
       return this.webWorker.removeEventListener.apply(
           this.webWorker, arguments);
