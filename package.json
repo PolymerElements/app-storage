@@ -3,6 +3,10 @@
   "homepage": "",
   "name": "@polymer/app-storage",
   "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/app-storage"
+  },
   "devDependencies": {
     "webmat": "^0.2.0",
     "@polymer/font-roboto": "^3.0.1",
