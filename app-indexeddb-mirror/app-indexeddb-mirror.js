@@ -134,6 +134,7 @@ import {AppIndexedDBMirrorClient} from './app-indexeddb-mirror-client.js';
 
 Polymer({
   is: 'app-indexeddb-mirror',
+  _template: null,
 
   behaviors: [AppStorageBehavior, AppNetworkStatusBehavior],
 
