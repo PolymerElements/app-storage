@@ -40,6 +40,7 @@ import {AppStorageBehavior} from '../app-storage-behavior.js';
  */
 Polymer({
   is: 'app-localstorage-document',
+  _template: null,
 
   behaviors: [AppStorageBehavior],
 
