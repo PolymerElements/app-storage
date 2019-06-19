@@ -46,11 +46,13 @@ export const AppNetworkStatusBehavior = {
     }
   },
 
+  /** @override */
   attached: function() {
     networkStatusSubscribers.push(this);
     this.refreshNetworkStatus();
   },
 
+  /** @override */
   detached: function() {
     var index = networkStatusSubscribers.indexOf(this);
     if (index < 0) {

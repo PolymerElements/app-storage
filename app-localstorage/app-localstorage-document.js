@@ -40,6 +40,7 @@ import {AppStorageBehavior} from '../app-storage-behavior.js';
  */
 Polymer({
   is: 'app-localstorage-document',
+  /** @override */
   _template: null,
 
   behaviors: [AppStorageBehavior],
@@ -68,12 +69,14 @@ Polymer({
 
   observers: ['__storageSourceChanged(storage, key)'],
 
+  /** @override */
   attached: function() {
     this.listen(window, 'storage', '__onStorage');
     this.listen(
         window.top, 'app-local-storage-changed', '__onAppLocalStorageChanged');
   },
 
+  /** @override */
   detached: function() {
     this.unlisten(window, 'storage', '__onStorage');
     this.unlisten(

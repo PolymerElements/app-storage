@@ -59,6 +59,7 @@ export const AppStorageBehavior = {
 
   observers: ['__dataChanged(data.*)'],
 
+  /** @override */
   created: function() {
     this.__initialized = false;
     this.__syncingToMemory = false;
@@ -66,6 +67,7 @@ export const AppStorageBehavior = {
     this.__transactionQueueAdvances = Promise.resolve();
   },
 
+  /** @override */
   ready: function() {
     this._initializeStoredValue();
   },
