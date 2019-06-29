@@ -335,6 +335,8 @@ export const AppStorageBehavior = {
 
   /**
    * A wrapper around `console.log`.
+   * @param {...*} args
+   * @override
    */
   _log: function(...args) {
     if (this.log) {
@@ -344,6 +346,8 @@ export const AppStorageBehavior = {
 
   /**
    * A wrapper around `console.error`.
+   * @param {...*} args
+   * @override
    */
   _error: function(...args) {
     if (this.log) {
@@ -353,6 +357,7 @@ export const AppStorageBehavior = {
 
   /**
    * A wrapper around `console.group`.
+   * @param {...*} args
    */
   _group: function(...args) {
     if (this.log) {
@@ -362,6 +367,7 @@ export const AppStorageBehavior = {
 
   /**
    * A wrapper around `console.groupEnd`.
+   * @param {...*} args
    */
   _groupEnd: function(...args) {
     if (this.log) {
@@ -378,7 +384,7 @@ export const AppStorageBehavior = {
    */
   _initializeStoredValue: function() {
     if (this.__initializingStoredValue) {
-      return;
+      return null;
     }
 
     this._group('Initializing stored value.');

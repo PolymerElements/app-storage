@@ -107,7 +107,7 @@ Polymer({
 
   reset: function() {
     this.key = null;
-    this.data = this.zeroValue;
+    this.data = /** @type {!Object} */ (this.zeroValue);
   },
 
   destroy: function() {
