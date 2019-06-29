@@ -34,7 +34,7 @@ export const AppNetworkStatusBehavior = {
      * True if the browser is online, and false if the browser is offline
      * matching the HTML browser state spec.
      *
-     * @type {Boolean}
+     * @type {Boolean|boolean}
      */
     online: {
       type: Boolean,

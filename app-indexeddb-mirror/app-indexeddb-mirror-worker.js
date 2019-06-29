@@ -127,12 +127,10 @@ AppIndexedDBMirrorWorker.prototype = {
    * with the result of the transaction, or rejects if the transaction fails
    * with the error reported by the transaction.
    */
-  operateOnStore: function(operation, storeName, mode) {
+  operateOnStore: function(operation, storeName, mode, ...operationArgs) {
     if (!self.Promise || !this.supportsIndexedDB) {
-      return;
+      return null;
     }
-
-    var operationArgs = Array.from(arguments).slice(3);
 
     return this.openDb().then(function(db) {
       console.log(
