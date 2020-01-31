@@ -72,15 +72,19 @@ Polymer({
   /** @override */
   attached: function() {
     this.listen(window, 'storage', '__onStorage');
-    this.listen(
+    if (this.__isSameOrigin(window.top)) {
+      this.listen(
         window.top, 'app-local-storage-changed', '__onAppLocalStorageChanged');
+    }
   },
 
   /** @override */
   detached: function() {
     this.unlisten(window, 'storage', '__onStorage');
-    this.unlisten(
+    if (this.__isSameOrigin(window.top)) {
+      this.unlisten(
         window.top, 'app-local-storage-changed', '__onAppLocalStorageChanged');
+    }
   },
 
   get isNew() {
@@ -149,7 +153,9 @@ Polymer({
         return Promise.reject(e);
       }
 
-      this.fire('app-local-storage-changed', this, {node: window.top});
+      if (this.__isSameOrigin(window.top)) {
+        this.fire('app-local-storage-changed', this, {node: window.top});
+      }
     }
 
     return Promise.resolve(value);
@@ -195,5 +201,13 @@ Polymer({
     if (typeof value === 'undefined')
       value = null;
     this.storage.setItem(key, JSON.stringify(value));
+  },
+
+  __isSameOrigin: function(windowReference) {
+    try {
+      return window.location.host === windowReference.location.host;
+    } catch (e) {
+      return false;
+    }
   }
 });
